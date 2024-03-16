@@ -1,0 +1,25 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "path-intellisense.mappings": {
+    "@": "${workspaceFolder}/src"
+  },
+  // "files.autoSave": "onWindowChange",
+  "files.autoSaveDelay": 2000,
+  // 配置 Tab 空格数
+  "editor.tabSize": 2,
+  // 保存自动格式化代码
+  "editor.formatOnSave": true,
+  // 粘贴自动格式化
+  "editor.formatOnPaste": true,
+  // 可以为不同语言或文档单独配置
+  "[typescript]": {
+    "editor.formatOnSave": true
+  },
+  "[markdown]": {
+    "editor.formatOnSave": true
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  }
+}
