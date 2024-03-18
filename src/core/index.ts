@@ -1,51 +1,59 @@
 import { isObject, isSymbol } from '@/utils/tools';
-import type { CoreMiddleware, Handlers, Proxied, TargetObj } from './middleware';
-import { getBaseHandler, execute } from './middleware';
+import type { IPlugin, Handlers, Proxied, TargetObj } from './plugins';
+import { getBaseHandler, execute } from './plugins';
 
 const ITERATION_KEY = Symbol('iteration key');
 
 class Core<T extends TargetObj> {
+  state: T | undefined;
   targetProxyCache: WeakMap<T, Proxied<T>>;
-
-  middlewares: Array<CoreMiddleware<T>>;
 
   handlers: Handlers<T>;
 
-  constructor(middlewares: Array<CoreMiddleware<T>>) {
+  constructor(private readonly plugins: Array<IPlugin<T>>) {
     this.targetProxyCache = new WeakMap<T, Proxied<T>>();
-    this.middlewares = middlewares;
     this.handlers = { get: [], set: [], ownKeys: [], delete: [], apply: [], init: [] };
     this.initHandler();
   }
 
   initHandler() {
     this.handlers = getBaseHandler();
-    this.middlewares.forEach(middleware => {
-      this.use(middleware);
+    this.plugins.forEach(plugin => {
+      this.use(plugin);
     });
   }
 
-  use(middleware: CoreMiddleware<T>) {
+  use(plugin: IPlugin<T>) {
+    plugin.setup(this);
     Reflect.ownKeys(this.handlers).forEach(type => {
       const _type = type as keyof Handlers<T>;
-      const target = middleware[_type] as any;
+      const target = plugin[_type] as any;
       if (target !== undefined) {
-        const baseMiddleware = this.handlers[_type].pop()!;
-        this.handlers[_type].push(target.bind(middleware));
-        this.handlers[_type].push(baseMiddleware as any);
+        const baseHandler = this.handlers[_type].pop()!;
+        this.handlers[_type].push(target.bind(plugin));
+        this.handlers[_type].push(baseHandler as any);
       }
     });
   }
 
-  unUse(middleware: CoreMiddleware<T>) {
-    const index = this.middlewares.indexOf(middleware);
+  unUse(plugin: IPlugin<T>) {
+    const index = this.plugins.indexOf(plugin);
     if (index !== -1) {
-      this.middlewares.splice(index, 1);
+      this.plugins.splice(index, 1);
       Reflect.ownKeys(this.handlers).forEach(type => {
         const _type = type as keyof Handlers<T>;
-        this.handlers[_type] = (this.handlers[_type] as any[]).filter(fn => fn !== middleware[_type]);
+        this.handlers[_type] = (this.handlers[_type] as any[]).filter(fn => fn !== plugin[_type]);
       });
     }
+  }
+
+  private attachTag(initObj: T) {
+    Object.defineProperty(initObj, '__isRex', {
+      get() {
+        return true;
+      },
+      enumerable: false,
+    });
   }
 
   proxyObject(initObj: T, rootProxyRef?: Proxied<T>): Proxied<T> {
@@ -53,7 +61,7 @@ class Core<T extends TargetObj> {
       throw new Error('init object must be Object');
     }
 
-    const { handlers, targetProxyCache } = this;
+    const { handlers, targetProxyCache, attachTag } = this;
 
     const proxyCache = targetProxyCache.get(initObj);
     if (proxyCache) {
@@ -62,6 +70,8 @@ class Core<T extends TargetObj> {
 
     const handler: ProxyHandler<T> = {
       get: (target, prop, receiver) => {
+        console.log('get trap', target, prop);
+
         const { value } = execute(handlers.get, target, prop, receiver);
         if (isObject(value)) {
           const tmpObj = value as T;
@@ -95,11 +105,12 @@ class Core<T extends TargetObj> {
       },
     };
     const { value: proxyObject } = execute(handlers.init, initObj, handler);
-
     targetProxyCache.set(initObj, proxyObject);
+    attachTag(initObj);
 
     if (rootProxyRef === undefined) {
       rootProxyRef = proxyObject;
+      this.state = initObj;
     }
 
     return proxyObject;

@@ -1,1 +1,1 @@
-console.log('demo01-01');
+import('./bootstrap');
