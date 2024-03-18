@@ -1,3 +1,4 @@
+import { v4 } from 'uuid';
 import { isObject, isSymbol } from '@/utils/tools';
 import type { IPlugin, Handlers, Proxied, TargetObj } from './plugins';
 import { getBaseHandler, execute } from './plugins';
@@ -5,13 +6,13 @@ import { getBaseHandler, execute } from './plugins';
 const ITERATION_KEY = Symbol('iteration key');
 
 class Core<T extends TargetObj> {
-  state: T | undefined;
-  targetProxyCache: WeakMap<T, Proxied<T>>;
+  setterProxyCache = new WeakMap<T, Proxied<T>>();
+  getterProxyCache = new Map<string, WeakMap<T, Proxied<T>>>();
+  getterIdMap = new WeakMap<T, string>();
 
   handlers: Handlers<T>;
 
   constructor(private readonly plugins: Array<IPlugin<T>>) {
-    this.targetProxyCache = new WeakMap<T, Proxied<T>>();
     this.handlers = { get: [], set: [], ownKeys: [], delete: [], apply: [], init: [] };
     this.initHandler();
   }
@@ -21,6 +22,10 @@ class Core<T extends TargetObj> {
     this.plugins.forEach(plugin => {
       this.use(plugin);
     });
+  }
+
+  getPlugin(ctor: new () => any) {
+    return this.plugins.find(plugin => plugin instanceof ctor);
   }
 
   use(plugin: IPlugin<T>) {
@@ -48,34 +53,33 @@ class Core<T extends TargetObj> {
   }
 
   private attachTag(initObj: T) {
-    Object.defineProperty(initObj, '__isRex', {
-      get() {
-        return true;
-      },
-      enumerable: false,
-    });
+    if (!('__isRex' in initObj)) {
+      Object.defineProperty(initObj, '__isRex', {
+        get() {
+          return true;
+        },
+        enumerable: false,
+      });
+    }
   }
 
-  proxyObject(initObj: T, rootProxyRef?: Proxied<T>): Proxied<T> {
+  createSetter(initObj: T, rootProxyRef?: Proxied<T>): Proxied<T> {
     if (!isObject(initObj)) {
       throw new Error('init object must be Object');
     }
+    const { handlers, setterProxyCache, attachTag } = this;
 
-    const { handlers, targetProxyCache, attachTag } = this;
-
-    const proxyCache = targetProxyCache.get(initObj);
+    const proxyCache = setterProxyCache.get(initObj);
     if (proxyCache) {
       return proxyCache;
     }
 
     const handler: ProxyHandler<T> = {
       get: (target, prop, receiver) => {
-        console.log('get trap', target, prop);
-
-        const { value } = execute(handlers.get, target, prop, receiver);
+        const value = Reflect.get(target, prop, receiver);
         if (isObject(value)) {
           const tmpObj = value as T;
-          return this.proxyObject(tmpObj, rootProxyRef);
+          return this.createSetter(tmpObj, rootProxyRef);
         }
         return value;
       },
@@ -92,7 +96,7 @@ class Core<T extends TargetObj> {
         return value;
       },
       ownKeys: target => {
-        const { value } = execute(handlers.ownKeys, target);
+        const value = Reflect.ownKeys(target);
         return value;
       },
       deleteProperty: (target, prop) => {
@@ -105,18 +109,85 @@ class Core<T extends TargetObj> {
       },
     };
     const { value: proxyObject } = execute(handlers.init, initObj, handler);
-    targetProxyCache.set(initObj, proxyObject);
-    attachTag(initObj);
 
     if (rootProxyRef === undefined) {
       rootProxyRef = proxyObject;
-      this.state = initObj;
     }
+
+    attachTag(initObj);
+    setterProxyCache.set(initObj, proxyObject);
+
+    return proxyObject;
+  }
+
+  createGetter(initObj: T, getterId?: string): Proxied<T> {
+    if (!isObject(initObj)) {
+      throw new Error('init object must be Object');
+    }
+
+    const { handlers, getterProxyCache, getterIdMap, attachTag } = this;
+
+    if (getterId !== undefined) {
+      const cacheMap = getterProxyCache.get(getterId);
+      const proxyCache = cacheMap?.get(initObj);
+      if (proxyCache) {
+        return proxyCache;
+      }
+    }
+
+    const handler: ProxyHandler<T> = {
+      get: (target, prop, receiver) => {
+        if (prop === '__origin') {
+          return target;
+        }
+        if (prop === '__core') {
+          return this;
+        }
+        const { value } = execute(handlers.get, target, prop, receiver);
+        if (isObject(value)) {
+          const tmpObj = value as T;
+          return this.createGetter(tmpObj, getterId);
+        }
+        return value;
+      },
+      set: (target, prop, newValue, receiver) => {
+        throw new Error(`attempt to set property ${String(prop)} to ${newValue}. This object is read-only.`);
+      },
+      ownKeys: target => {
+        const { value } = execute(handlers.ownKeys, target);
+        return value;
+      },
+      deleteProperty: (target, prop) => {
+        throw new Error(`attempt to delete property ${String(prop)}. This object is read-only.`);
+      },
+    };
+    const proxyObject = new Proxy(initObj, handler) as Proxied<T>;
+    if (getterId === undefined) {
+      getterId = v4();
+    }
+
+    attachTag(initObj);
+    const cache = getterProxyCache.get(getterId) || new WeakMap<T, Proxied<T>>();
+    cache.set(initObj, proxyObject);
+    getterProxyCache.set(getterId, cache);
+    getterIdMap.set(initObj, getterId);
 
     return proxyObject;
   }
 }
 
-export { ITERATION_KEY };
+const isRex = <T extends TargetObj>(target: T) => {
+  return target.__isRex;
+};
+
+const toRaw = <T extends TargetObj>(target: Proxied<T>) => {
+  return target.__origin;
+};
+
+const getCoreInstance = <T extends TargetObj>(target: Proxied<T>) => {
+  return target.__core;
+};
+
+export { ITERATION_KEY, isRex, toRaw, getCoreInstance };
 
 export default Core;
