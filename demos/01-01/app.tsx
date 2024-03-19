@@ -21,14 +21,27 @@ const Test2: FC<PropTypes> = reactiveMemo(({ person }) => {
 
 const App = () => {
   const [t, setT] = useState({ test: 111 });
-  const [state, setState] = useReactive({ person: { name: 'xxx', age: 10 }, count: 0 });
-  const { person } = state;
+  const [state, setState] = useReactive({
+    person: { name: 'xxx', age: 10 },
+    test: {
+      a: {
+        b: 1,
+      },
+    },
+    count: 0,
+  });
 
-  useEffect(() => {
-    console.log('effect', person.name);
-  }, [person]);
+  // console.log(state.person.name);
+  console.log(state.person);
 
-  console.log('render App', person, window.pathsMap.get(toRaw(person)));
+  console.log(window.getPath(toRaw(state.test)));
+
+  // useEffect(() => {
+  //   console.log('effect', person.name);
+  //   // console.log('effect');
+  // }, [person]);
+
+  // console.log('render App', person, window.pathsMap.get(toRaw(state)));
   return (
     <div style={{ padding: '10px' }}>
       {state.count}
