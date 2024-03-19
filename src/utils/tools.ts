@@ -4,4 +4,8 @@ const isObject = (value: unknown): value is object => typeof value === 'object' 
 
 const isSymbol = (value: unknown): value is symbol => typeof value === 'symbol';
 
-export { isFunction, isObject, isSymbol };
+const isPrimitive = (value: any) => {
+  return (typeof value !== 'object' && typeof value !== 'function') || value === null;
+};
+
+export { isFunction, isObject, isSymbol, isPrimitive };

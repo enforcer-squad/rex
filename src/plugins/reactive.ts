@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import Core, { getCoreInstance, isRex, toRaw } from '@/core';
 import type { TargetObj, IPlugin, Proxied } from '@/core/plugins';
 import { type FunctionComponent, memo, useCallback, useLayoutEffect, useMemo, useReducer, useRef, useEffect } from 'react';
+import { SubscribePlugin } from './subscribe';
 
 type DispatchFn = (...args: any[]) => void;
 
@@ -25,11 +27,6 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
   };
 
   get: IPlugin<T>['get'] = (context, next, target, prop, receiver) => {
-    if (prop === '__isRex' || prop === '__origin' || prop === '__core') {
-      next(context, next, target, prop, receiver);
-      return;
-    }
-
     next(context, next, target, prop, receiver);
     const propsListeners = this.listenersMap.get(target) || new Map();
     const listeners = propsListeners.get(prop) || new Set();
@@ -84,8 +81,9 @@ type ReactiveReturn<T extends TargetObj> = [Proxied<T>, (draft: UpdateFn<T>) => 
 const useReactive = <T extends TargetObj>(initObj: T) => {
   const safeUpdate = useSafeUpdate();
   const result = useMemo<ReactiveReturn<T>>(() => {
+    const subscribePlugin = new SubscribePlugin<T>();
     const reactivePlugin = new ReactivePlugin<T>();
-    const core = new Core<T>([reactivePlugin]);
+    const core = new Core<T>([subscribePlugin, reactivePlugin]);
     const setter = core.createSetter(initObj);
     const gettter = core.createGetter(initObj);
     const getterId = core.getterIdMap.get(initObj)!;
@@ -102,7 +100,6 @@ const useReactive = <T extends TargetObj>(initObj: T) => {
 
 const reactiveMemo = <P extends TargetObj>(Component: FunctionComponent<P>) => {
   return memo((props: P) => {
-    console.log('memo render');
     const safeUpdate = useSafeUpdate();
     const _props = useMemo(() => {
       console.log('重新计算props');
@@ -126,6 +123,7 @@ const reactiveMemo = <P extends TargetObj>(Component: FunctionComponent<P>) => {
     return Component(_props);
   });
 };
+
 export type { DispatchFn };
 
 export { ReactivePlugin, useReactive, reactiveMemo };

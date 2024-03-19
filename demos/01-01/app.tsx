@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { memo, type FC, useState } from 'react';
+import { memo, type FC, useState, useEffect } from 'react';
 import { useReactive, reactiveMemo } from '@/plugins/reactive';
 import { Button, Space } from 'antd';
+import { toRaw } from '@/core';
 
 interface PropTypes {
   person: { name: string; age: number };
@@ -23,11 +24,15 @@ const App = () => {
   const [state, setState] = useReactive({ person: { name: 'xxx', age: 10 }, count: 0 });
   const { person } = state;
 
-  console.log('render App', person);
+  useEffect(() => {
+    console.log('effect', person.name);
+  }, [person]);
+
+  console.log('render App', person, window.pathsMap.get(toRaw(person)));
   return (
     <div style={{ padding: '10px' }}>
       {state.count}
-      <Test1 person={person} t={t} />
+      {/* <Test1 person={person} t={t} />
       <Test2 person={person} />
       <Space>
         <Button
@@ -36,15 +41,15 @@ const App = () => {
             setState(draft => draft.count++);
           }}>
           Change Count
-        </Button>
-        <Button
-          type="primary"
-          onClick={() => {
-            setState(draft => (draft.person.name = 'yyy'));
-          }}>
-          Change Name
-        </Button>
-        <Button
+        </Button> */}
+      <Button
+        type="primary"
+        onClick={() => {
+          setState(draft => (draft.person.name = 'yyy'));
+        }}>
+        Change Name
+      </Button>
+      {/* <Button
           type="primary"
           onClick={() => {
             setState(draft => draft.person.age++);
@@ -65,7 +70,7 @@ const App = () => {
           }}>
           setT
         </Button>
-      </Space>
+      </Space> */}
     </div>
   );
 };

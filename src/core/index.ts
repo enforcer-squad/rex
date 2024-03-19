@@ -139,9 +139,10 @@ class Core<T extends TargetObj> {
       get: (target, prop, receiver) => {
         if (prop === '__origin') {
           return target;
-        }
-        if (prop === '__core') {
+        } else if (prop === '__core') {
           return this;
+        } else if (prop === '__isRex') {
+          return Reflect.get(target, prop, receiver);
         }
         const { value } = execute(handlers.get, target, prop, receiver);
         if (isObject(value)) {
@@ -180,7 +181,7 @@ const isRex = <T extends TargetObj>(target: T) => {
   return target.__isRex;
 };
 
-const toRaw = <T extends TargetObj>(target: Proxied<T>) => {
+const toRaw = (target: TargetObj) => {
   return target.__origin;
 };
 
