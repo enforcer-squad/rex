@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import Core, { getCoreInstance, isRex, toRaw } from '@/core';
-import type { TargetObj, IPlugin, Proxied } from '@/core/plugins';
-import { type FunctionComponent, memo, useCallback, useLayoutEffect, useMemo, useReducer, useRef, useEffect } from 'react';
-import { SubscribePlugin } from './subscribe';
+import type Core from '@/core';
+import type { TargetObj, IPlugin, Proxied, DispatchFn } from '@/core/plugins';
 
-type DispatchFn = (...args: any[]) => void;
+const collectionState = {
+  enable: true,
+};
 
 class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
   core: Core<T> | undefined;
@@ -27,11 +27,17 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
   };
 
   get: IPlugin<T>['get'] = (context, next, target, prop, receiver) => {
+    if (!collectionState.enable) {
+      next(context, next, target, prop, receiver);
+      return;
+    }
     next(context, next, target, prop, receiver);
     const propsListeners = this.listenersMap.get(target) || new Map();
     const listeners = propsListeners.get(prop) || new Set();
     const dispatcher = this.getDispatcher(target);
-    listeners.add(dispatcher);
+    if (dispatcher) {
+      listeners.add(dispatcher);
+    }
     propsListeners.set(prop, listeners);
     this.listenersMap.set(target, propsListeners);
   };
@@ -57,73 +63,4 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
   };
 }
 
-const useSafeUpdate = () => {
-  const [, forceUpdate] = useReducer(x => x + 1, 0);
-  const isMountedRef = useRef(false);
-
-  useLayoutEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
-  return useCallback(() => {
-    if (isMountedRef.current) {
-      forceUpdate();
-    }
-  }, []);
-};
-
-type UpdateFn<T extends TargetObj> = (draft: Proxied<T>) => void;
-type ReactiveReturn<T extends TargetObj> = [Proxied<T>, (draft: UpdateFn<T>) => void];
-
-const useReactive = <T extends TargetObj>(initObj: T) => {
-  const safeUpdate = useSafeUpdate();
-  const result = useMemo<ReactiveReturn<T>>(() => {
-    const subscribePlugin = new SubscribePlugin<T>();
-    const reactivePlugin = new ReactivePlugin<T>();
-    const core = new Core<T>([subscribePlugin, reactivePlugin]);
-    const setter = core.createSetter(initObj);
-    const gettter = core.createGetter(initObj);
-    const getterId = core.getterIdMap.get(initObj)!;
-    reactivePlugin.updateDispatcher(getterId, safeUpdate);
-
-    const setState = (fn: UpdateFn<T>): void => {
-      fn(setter);
-    };
-    return [gettter, setState];
-  }, []);
-
-  return result;
-};
-
-const reactiveMemo = <P extends TargetObj>(Component: FunctionComponent<P>) => {
-  return memo((props: P) => {
-    const safeUpdate = useSafeUpdate();
-    const _props = useMemo(() => {
-      console.log('重新计算props');
-
-      return Object.keys(props).reduce<any>((ret, key) => {
-        if (isRex(props[key])) {
-          const proxyTarget = props[key];
-          const core = getCoreInstance(proxyTarget);
-          const target = toRaw(proxyTarget);
-          const getter = core.createGetter(target);
-          const getterId = core.getterIdMap.get(target)!;
-          const reactivePlugin = core.getPlugin(ReactivePlugin);
-          reactivePlugin.updateDispatcher(getterId, safeUpdate);
-          ret[key] = getter;
-        } else {
-          ret[key] = props[key];
-        }
-        return ret;
-      }, {});
-    }, [safeUpdate, ...Object.values(props)]);
-    return Component(_props);
-  });
-};
-
-export type { DispatchFn };
-
-export { ReactivePlugin, useReactive, reactiveMemo };
+export { collectionState, ReactivePlugin };

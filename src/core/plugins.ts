@@ -4,6 +4,12 @@ type TargetObj = Record<string, any>;
 
 type Context = { value: any };
 
+type Proxied<T> = {
+  [P in keyof T]: T[P] extends object ? Proxied<T[P]> : T[P];
+};
+
+type DispatchFn = (...args: any[]) => void;
+
 type Handler = (context: Context, next: Handler, ...args: any[]) => void;
 
 type GetHandler<T extends TargetObj> = (context: Context, next: GetHandler<T>, target: T, p: keyof T, receiver: any) => void;
@@ -31,8 +37,6 @@ type Handlers<T extends TargetObj> = {
   apply: Array<ApplyHandler<T>>;
   init: Array<InitHandler<T>>;
 };
-
-type Proxied<T> = T & { __isRex: boolean };
 
 const getBaseHandler = <T extends TargetObj>() => {
   const getHandler: GetHandler<T> = (context, next, target, prop, receiver) => {
@@ -91,6 +95,6 @@ const execute = (handlers: Handler[], ...args: any[]) => {
 //   return middlewares.filter(fn => fn !== middleware) as HandlerFunction<T, K>;
 // }
 
-export type { TargetObj, Context, Handler, GetHandler, SetHandler, OwnKeysHandler, DeleteHandler, ApplyHandler, InitHandler, IPlugin, Handlers, Proxied };
+export type { TargetObj, Context, Handler, GetHandler, SetHandler, OwnKeysHandler, DeleteHandler, ApplyHandler, InitHandler, IPlugin, Handlers, Proxied, DispatchFn };
 
 export { getBaseHandler, execute };

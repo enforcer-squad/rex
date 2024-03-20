@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { memo, type FC, useState, useEffect } from 'react';
-import { useReactive, reactiveMemo } from '@/plugins/reactive';
 import { Button, Space } from 'antd';
-import { toRaw } from '@/core';
+import { reactiveMemo, useReactive } from '@/hooks/useReactive';
+import { useComputed } from '@/hooks/useComputed';
+import { useWatch } from '@/hooks/useWatch';
 
 interface PropTypes {
   person: { name: string; age: number };
@@ -16,7 +17,10 @@ const Test1: FC<PropTypes> = reactiveMemo(({ person }) => {
 
 const Test2: FC<PropTypes> = reactiveMemo(({ person }) => {
   console.log('render Test2');
-  return <div>{person.age}</div>;
+  useWatch(() => {
+    console.log('Test2', person.name);
+  }, [person]);
+  return <div>123</div>;
 });
 
 const App = () => {
@@ -30,11 +34,12 @@ const App = () => {
     },
     count: 0,
   });
-
+  const { person, test } = state;
   // console.log(state.person.name);
   console.log(state.person);
+  const computedResult = useComputed(() => person.name + test.a.b, [person, test]);
 
-  console.log(window.getPath(toRaw(state.test)));
+  // console.log(window.getPath(toRaw(state.test)));
 
   // useEffect(() => {
   //   console.log('effect', person.name);
@@ -45,22 +50,30 @@ const App = () => {
   return (
     <div style={{ padding: '10px' }}>
       {state.count}
-      {/* <Test1 person={person} t={t} />
+      {computedResult}
+      {/* <Test1 person={person} t={t} /> */}
       <Test2 person={person} />
-      <Space>
-        <Button
-          type="primary"
-          onClick={() => {
-            setState(draft => draft.count++);
-          }}>
-          Change Count
-        </Button> */}
+      {/* <Space> */}
+      <Button
+        type="primary"
+        onClick={() => {
+          setState(draft => draft.count++);
+        }}>
+        Change Count
+      </Button>
       <Button
         type="primary"
         onClick={() => {
           setState(draft => (draft.person.name = 'yyy'));
         }}>
         Change Name
+      </Button>
+      <Button
+        type="primary"
+        onClick={() => {
+          setState(draft => (draft.test.a.b = Math.random()));
+        }}>
+        Change test
       </Button>
       {/* <Button
           type="primary"

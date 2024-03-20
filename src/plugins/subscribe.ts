@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type Core from '@/core';
 import { getCoreInstance, isRex, toRaw } from '@/core';
-import type { TargetObj, IPlugin, Proxied } from '@/core/plugins';
+import type { TargetObj, IPlugin, Proxied, DispatchFn } from '@/core/plugins';
 import { isObject } from '@/utils/tools';
 import { type FunctionComponent, memo, useCallback, useLayoutEffect, useMemo, useReducer, useRef, useEffect } from 'react';
 
@@ -11,6 +11,8 @@ type GetPath<T extends TargetObj> = (target: T, prop?: keyof T) => string;
 class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
   core: Core<T> | undefined;
   pathsMap = new WeakMap<T, string>();
+  listenersMap = new Map<string, Set<DispatchFn>>();
+
   setup(core: Core<T>) {
     window.pathsMap = this.pathsMap;
     this.core = core;
@@ -45,8 +47,27 @@ class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
   set: IPlugin<T>['set'] = (context, next, target, prop, newValue, receiver) => {
     next(context, next, target, prop, newValue, receiver);
     const currentPath = this.getPath(target, prop);
+    if (currentPath) {
+      const matchingKeys = Array.from(this.listenersMap.keys()).filter(key => currentPath.includes(key));
+      matchingKeys.forEach(matchKey => {
+        this.listenersMap.get(matchKey)?.forEach(cb => {
+          cb();
+        });
+      });
+    }
     console.log('set', currentPath);
   };
 }
 
-export { SubscribePlugin };
+const subscribe = <T extends TargetObj>(proxyTarget: Proxied<T>, callback: (...args: any[]) => void) => {
+  const core = getCoreInstance(proxyTarget);
+  const subscribePlugin = core.getPlugin(SubscribePlugin);
+  const subscribePath = subscribePlugin.getPath(toRaw(proxyTarget));
+  if (subscribePath) {
+    const pathListeners = subscribePlugin.listenersMap.get(subscribePath) || new Set<DispatchFn>();
+    pathListeners.add(callback);
+    subscribePlugin.listenersMap.set(subscribePath, pathListeners);
+  }
+};
+
+export { subscribe, SubscribePlugin };
