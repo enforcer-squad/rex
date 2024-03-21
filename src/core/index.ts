@@ -1,9 +1,7 @@
 import { v4 } from 'uuid';
-import { isObject, isSymbol } from '@/utils/tools';
+import { isArrayTraverse, isFunctionProp, isObject, isSymbol } from '@/utils/tools';
 import type { IPlugin, Handlers, Proxied, TargetObj } from './plugins';
 import { getBaseHandler, execute } from './plugins';
-
-const ITERATION_KEY = Symbol('iteration key');
 
 class Core<T extends TargetObj> {
   setterProxyCache = new WeakMap<T, Proxied<T>>();
@@ -120,6 +118,7 @@ class Core<T extends TargetObj> {
     return proxyObject;
   }
 
+  // TODO: has暂未实现，看需求
   createGetter(initObj: T, getterId?: string): Proxied<T> {
     if (!isObject(initObj)) {
       throw new Error('init object must be Object');
@@ -143,7 +142,13 @@ class Core<T extends TargetObj> {
           return this;
         } else if (prop === '__isRex') {
           return Reflect.get(target, prop, receiver);
+        } else if (isArrayTraverse(target, prop)) {
+          execute(handlers.ownKeys, target);
+          return Reflect.get(target, prop, receiver);
+        } else if (isFunctionProp(target, prop)) {
+          return Reflect.get(target, prop, receiver);
         }
+
         const { value } = execute(handlers.get, target, prop, receiver);
         if (isObject(value)) {
           const tmpObj = value as T;
@@ -177,11 +182,11 @@ class Core<T extends TargetObj> {
   }
 }
 
-const isRex = <T extends TargetObj>(target: T) => {
+const isRex = <T extends TargetObj>(target: Proxied<T>) => {
   return target.__isRex;
 };
 
-const toRaw = (target: TargetObj) => {
+const toRaw = <T extends TargetObj>(target: Proxied<T>) => {
   return target.__origin;
 };
 
@@ -189,6 +194,6 @@ const getCoreInstance = <T extends TargetObj>(target: Proxied<T>) => {
   return target.__core;
 };
 
-export { ITERATION_KEY, isRex, toRaw, getCoreInstance };
+export { isRex, toRaw, getCoreInstance };
 
 export default Core;

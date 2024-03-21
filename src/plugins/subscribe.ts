@@ -14,9 +14,7 @@ class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
   listenersMap = new Map<string, Set<DispatchFn>>();
 
   setup(core: Core<T>) {
-    window.pathsMap = this.pathsMap;
     this.core = core;
-    window.getPath = this.getPath;
   }
 
   private readonly getPath: GetPath<T> = (target, prop) => {
@@ -55,7 +53,7 @@ class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
         });
       });
     }
-    console.log('set', currentPath);
+    // console.log('set', currentPath);
   };
 }
 

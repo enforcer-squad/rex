@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type Core from '@/core';
-import type { TargetObj, IPlugin, Proxied, DispatchFn } from '@/core/plugins';
+import type { TargetObj, IPlugin, DispatchFn } from '@/core/plugins';
+
+const ITERATION_KEY = Symbol('iteration key');
 
 const collectionState = {
   enable: true,
 };
-
 class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
   core: Core<T> | undefined;
   listenersMap = new WeakMap<T, Map<keyof T, Set<DispatchFn>>>();
@@ -27,11 +26,13 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
   };
 
   get: IPlugin<T>['get'] = (context, next, target, prop, receiver) => {
+    console.log('get trap', target, prop);
+
+    next(context, next, target, prop, receiver);
+
     if (!collectionState.enable) {
-      next(context, next, target, prop, receiver);
       return;
     }
-    next(context, next, target, prop, receiver);
     const propsListeners = this.listenersMap.get(target) || new Map();
     const listeners = propsListeners.get(prop) || new Set();
     const dispatcher = this.getDispatcher(target);
@@ -43,23 +44,64 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
   };
 
   set: IPlugin<T>['set'] = (context, next, target, prop, newValue, receiver) => {
-    console.log('set trap', target, prop);
+    console.log('set trap', target, prop, newValue);
+
+    const hasKey = Reflect.has(target, prop);
+    const prevValue = target[prop];
+
+    next(context, next, target, prop, newValue, receiver);
+
     const propsListeners = this.listenersMap.get(target);
-    if (propsListeners === undefined) {
-      next(context, next, target, prop, newValue, receiver);
-      return;
-    }
-    const listeners = propsListeners.get(prop);
-    if (listeners === undefined) {
-      next(context, next, target, prop, newValue, receiver);
-      return;
+    const listeners = propsListeners?.get(prop);
+    if (propsListeners && listeners) {
+      listeners.forEach(listener => {
+        listener(newValue, prevValue);
+      });
     }
 
-    const prevValue = target[prop];
-    next(context, next, target, prop, newValue, receiver);
-    listeners.forEach(listener => {
-      listener(newValue, prevValue);
-    });
+    const iterationListeners = propsListeners?.get(ITERATION_KEY as keyof T);
+    if (!hasKey && iterationListeners) {
+      iterationListeners.forEach(listener => {
+        listener(prop);
+      });
+    }
+  };
+
+  ownKeys: IPlugin<T>['ownKeys'] = (context, next, target) => {
+    console.log('ownKeys trap', target);
+
+    next(context, next, target);
+
+    if (!collectionState.enable) {
+      return;
+    }
+    const propsListeners = this.listenersMap.get(target) || new Map();
+    const listeners = propsListeners.get(ITERATION_KEY) || new Set();
+    const dispatcher = this.getDispatcher(target);
+    listeners.add(dispatcher);
+    propsListeners.set(ITERATION_KEY, listeners);
+    this.listenersMap.set(target, propsListeners);
+  };
+
+  delete: IPlugin<T>['delete'] = (context, next, target, prop) => {
+    console.log('delete trap', target, prop);
+
+    next(context, next, target, prop);
+
+    const propsListeners = this.listenersMap.get(target);
+    const listeners = propsListeners?.get(prop);
+    if (propsListeners && listeners) {
+      listeners.forEach(listener => {
+        listener(prop);
+      });
+    }
+
+    const iterationListeners = propsListeners?.get(ITERATION_KEY as keyof T);
+    if (iterationListeners) {
+      iterationListeners.forEach(listener => {
+        listener(prop);
+      });
+    }
   };
 }
 
