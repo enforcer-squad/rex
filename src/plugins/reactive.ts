@@ -6,6 +6,7 @@ const ITERATION_KEY = Symbol('iteration key');
 const collectionState = {
   enable: true,
 };
+// TODO: 回收无效监听
 class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
   core: Core<T> | undefined;
   listenersMap = new WeakMap<T, Map<keyof T, Set<DispatchFn>>>();
