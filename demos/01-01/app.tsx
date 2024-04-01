@@ -30,7 +30,7 @@ const Test2: FC<PropTypes> = reactiveMemo(({ person }) => {
 const App = () => {
   console.log('render App');
 
-  const [t, setT] = useState({ test: 111 });
+  const [index, setIndex] = useState(0);
   const [state, setState] = useReactive({
     person: { name: 'xxx', age: 10 },
     test: {
@@ -63,6 +63,21 @@ const App = () => {
   // console.log('render App', person, window.pathsMap.get(toRaw(state)));
   return (
     <div style={{ padding: '10px' }}>
+      <div>{state.arr[index]}</div>
+      <Button
+        onClick={() => {
+          setState(draft => {
+            draft.arr[0] = Math.random();
+          });
+        }}>
+        change index 0 value
+      </Button>
+      <Button
+        onClick={() => {
+          setIndex(1);
+        }}>
+        change index to 1
+      </Button>
       {/* <div>测试用例 访问一个不存在的key 然后观察响应式能力</div>
       <span>{(state as any).nonKey}</span>
       <Button
