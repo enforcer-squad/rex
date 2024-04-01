@@ -64,7 +64,7 @@ const App = () => {
   return (
     <div style={{ padding: '10px' }}>
       {/* <div>测试用例 访问一个不存在的key 然后观察响应式能力</div>
-      {(state as any).nonKey}
+      <span>{(state as any).nonKey}</span>
       <Button
         onClick={() => {
           setState(draft => ((draft as any).nonKey = Math.random()));
@@ -111,7 +111,7 @@ const App = () => {
         }}>
         delete key
       </Button> */}
-      <div>测试用例 map数组 增加减少元素 然后观察响应式能力</div>
+      {/* <div>测试用例 map数组 增加减少元素 然后观察响应式能力</div>
       {state.arr.map((item, index) => {
         return <p key={index}>{item}</p>;
       })}
@@ -156,7 +156,7 @@ const App = () => {
           setState(draft => draft.arr.reverse());
         }}>
         reverse items
-      </Button>
+      </Button> */}
       {/* {state.count} */}
       {/* {computedResult} */}
       {/* <Test1 person={person} t={t} /> */}
