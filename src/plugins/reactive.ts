@@ -6,11 +6,12 @@ const ITERATION_KEY = Symbol('iteration key');
 const collectionState = {
   enable: true,
 };
-// TODO: 回收无效监听
+
 class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
   core: Core<T> | undefined;
   listenersMap = new WeakMap<T, Map<keyof T, Set<DispatchFn>>>();
   dispatchersMap = new Map<string, DispatchFn>();
+  recycleMap = new WeakMap<DispatchFn, Map<T, Set<keyof T>>>();
 
   setup(core: Core<T>) {
     this.core = core;
@@ -26,6 +27,27 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
     return dispatcher;
   };
 
+  private readonly registerDispatcher = (target: T, prop: keyof T) => {
+    const { listenersMap, getDispatcher, recycleMap } = this;
+    // 添加回调
+    const propsListeners = listenersMap.get(target) || new Map();
+    const listeners = propsListeners.get(prop) || new Set();
+    const dispatcher = getDispatcher(target);
+    if (!dispatcher) {
+      return;
+    }
+    listeners.add(dispatcher);
+    propsListeners.set(prop, listeners);
+    listenersMap.set(target, propsListeners);
+
+    // 添加回收
+    const currentCallbackDeps = recycleMap.get(dispatcher) || new Map<T, Set<keyof T>>();
+    const callback = currentCallbackDeps.get(target) || new Set<keyof T>();
+    callback.add(prop);
+    currentCallbackDeps.set(target, callback);
+    recycleMap.set(dispatcher, currentCallbackDeps);
+  };
+
   get: IPlugin<T>['get'] = (context, next, target, prop, receiver) => {
     console.log('get trap', target, prop);
 
@@ -34,14 +56,7 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
     if (!collectionState.enable) {
       return;
     }
-    const propsListeners = this.listenersMap.get(target) || new Map();
-    const listeners = propsListeners.get(prop) || new Set();
-    const dispatcher = this.getDispatcher(target);
-    if (dispatcher) {
-      listeners.add(dispatcher);
-    }
-    propsListeners.set(prop, listeners);
-    this.listenersMap.set(target, propsListeners);
+    this.registerDispatcher(target, prop);
   };
 
   set: IPlugin<T>['set'] = (context, next, target, prop, newValue, receiver) => {
@@ -76,12 +91,7 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
     if (!collectionState.enable) {
       return;
     }
-    const propsListeners = this.listenersMap.get(target) || new Map();
-    const listeners = propsListeners.get(ITERATION_KEY) || new Set();
-    const dispatcher = this.getDispatcher(target);
-    listeners.add(dispatcher);
-    propsListeners.set(ITERATION_KEY, listeners);
-    this.listenersMap.set(target, propsListeners);
+    this.registerDispatcher(target, ITERATION_KEY as keyof T);
   };
 
   delete: IPlugin<T>['delete'] = (context, next, target, prop) => {

@@ -1,8 +1,8 @@
 import Core, { getCoreInstance, isRex, toRaw } from '@/core';
-import { type Proxied, type TargetObj } from '@/core/plugins';
+import { type DispatchFn, type Proxied, type TargetObj } from '@/core/plugins';
 import { ReactivePlugin } from '@/plugins/reactive';
 import { SubscribePlugin } from '@/plugins/subscribe';
-import { type FunctionComponent, memo, useCallback, useLayoutEffect, useMemo, useReducer, useRef } from 'react';
+import { type FunctionComponent, memo, useCallback, useLayoutEffect, useMemo, useReducer, useRef, useEffect } from 'react';
 
 type UpdateFn<T extends TargetObj> = (draft: Proxied<T>) => void;
 type ReactiveReturn<T extends TargetObj> = [Proxied<T>, (draft: UpdateFn<T>) => void];
@@ -25,8 +25,29 @@ const useSafeUpdate = () => {
   }, []);
 };
 
+const recycleDispatch = <T extends TargetObj>(core: Core<T> | undefined, dispatchFn: DispatchFn) => {
+  if (!core) {
+    return;
+  }
+  const reactivePlugin = core.getPlugin(ReactivePlugin)!;
+  const depsMap = reactivePlugin.recycleMap.get(dispatchFn);
+  if (depsMap) {
+    depsMap.forEach((props, target) => {
+      props.forEach(prop => {
+        const propListeners = reactivePlugin.listenersMap.get(target)!;
+        const listeners = propListeners.get(prop);
+        listeners?.delete(dispatchFn);
+      });
+    });
+    reactivePlugin.recycleMap.delete(dispatchFn);
+  }
+};
+
 const useReactive = <T extends TargetObj>(initObj: T) => {
+  const coreRef = useRef<Core<T>>();
   const safeUpdate = useSafeUpdate();
+  recycleDispatch(coreRef.current, safeUpdate);
+
   const result = useMemo<ReactiveReturn<T>>(() => {
     const subscribePlugin = new SubscribePlugin<T>();
     const reactivePlugin = new ReactivePlugin<T>();
@@ -35,11 +56,19 @@ const useReactive = <T extends TargetObj>(initObj: T) => {
     const gettter = core.createGetter(initObj);
     const getterId = core.getterIdMap.get(initObj)!;
     reactivePlugin.updateDispatcher(getterId, safeUpdate);
-
     const setState = (fn: UpdateFn<T>): void => {
       fn(setter);
     };
+
+    coreRef.current = core;
     return [gettter, setState];
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      // 应该不需要添加其他的了 weakmap加react函数释放
+      recycleDispatch(coreRef.current, safeUpdate);
+    };
   }, []);
 
   return result;
@@ -47,7 +76,10 @@ const useReactive = <T extends TargetObj>(initObj: T) => {
 
 const reactiveMemo = <P extends TargetObj>(Component: FunctionComponent<P>) => {
   return memo((props: P) => {
+    const coreRef = useRef<Core<P>>();
     const safeUpdate = useSafeUpdate();
+    recycleDispatch(coreRef.current, safeUpdate);
+
     const _props = useMemo(() => {
       console.log('重新计算props');
 
@@ -67,6 +99,13 @@ const reactiveMemo = <P extends TargetObj>(Component: FunctionComponent<P>) => {
         return ret;
       }, {});
     }, [safeUpdate, ...Object.values(props)]);
+
+    useEffect(() => {
+      return () => {
+        recycleDispatch(coreRef.current, safeUpdate);
+      };
+    }, []);
+
     return Component(_props);
   });
 };

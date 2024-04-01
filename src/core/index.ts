@@ -22,8 +22,8 @@ class Core<T extends TargetObj> {
     });
   }
 
-  getPlugin(ctor: new () => any) {
-    return this.plugins.find(plugin => plugin instanceof ctor);
+  getPlugin<PluginType>(ctor: new () => PluginType): PluginType | undefined {
+    return this.plugins.find(plugin => plugin instanceof ctor) as PluginType;
   }
 
   use(plugin: IPlugin<T>) {
