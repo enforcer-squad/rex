@@ -1,5 +1,5 @@
 import type Core from '@/core';
-import type { TargetObj, IPlugin, DispatchFn } from '@/core/plugins';
+import type { TargetObj, IPlugin, DispatchFn, Proxied } from '@/core/plugins';
 
 const ITERATION_KEY = Symbol('iteration key');
 
@@ -21,18 +21,18 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
     this.dispatchersMap.set(getterId, dispatch);
   };
 
-  getDispatcher = (target: T) => {
+  getDispatcher = (target: Proxied<T>) => {
     const getterId = this.core?.getterIdMap.get(target);
     const dispatcher = this.dispatchersMap.get(getterId!);
     return dispatcher;
   };
 
-  private readonly registerDispatcher = (target: T, prop: keyof T) => {
+  private readonly registerDispatcher = (target: T, prop: keyof T, receiver: Proxied<T>) => {
     const { listenersMap, getDispatcher, recycleMap } = this;
     // 添加回调
     const propsListeners = listenersMap.get(target) || new Map();
     const listeners = propsListeners.get(prop) || new Set();
-    const dispatcher = getDispatcher(target);
+    const dispatcher = getDispatcher(receiver);
     if (!dispatcher) {
       return;
     }
@@ -56,7 +56,8 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
     if (!collectionState.enable) {
       return;
     }
-    this.registerDispatcher(target, prop);
+
+    this.registerDispatcher(target, prop, receiver);
   };
 
   set: IPlugin<T>['set'] = (context, next, target, prop, newValue, receiver) => {
@@ -69,6 +70,7 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
 
     const propsListeners = this.listenersMap.get(target);
     const listeners = propsListeners?.get(prop);
+
     if (propsListeners && listeners) {
       listeners.forEach(listener => {
         listener(newValue, prevValue);
@@ -83,15 +85,15 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
     }
   };
 
-  ownKeys: IPlugin<T>['ownKeys'] = (context, next, target) => {
+  ownKeys: IPlugin<T>['ownKeys'] = (context, next, target, receiver) => {
     console.log('ownKeys trap', target);
 
-    next(context, next, target);
+    next(context, next, target, receiver);
 
     if (!collectionState.enable) {
       return;
     }
-    this.registerDispatcher(target, ITERATION_KEY as keyof T);
+    this.registerDispatcher(target, ITERATION_KEY as keyof T, receiver);
   };
 
   delete: IPlugin<T>['delete'] = (context, next, target, prop) => {

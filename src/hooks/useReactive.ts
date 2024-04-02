@@ -1,11 +1,17 @@
+/* eslint-disable prefer-const */
 import Core, { getCoreInstance, isRex, toRaw } from '@/core';
-import { type DispatchFn, type Proxied, type TargetObj } from '@/core/plugins';
+import { type PrimitiveType, type DispatchFn, type Proxied, type TargetObj } from '@/core/plugins';
 import { ReactivePlugin } from '@/plugins/reactive';
 import { SubscribePlugin } from '@/plugins/subscribe';
+import { isFunction, isPrimitive } from '@/utils/tools';
 import { type FunctionComponent, memo, useCallback, useLayoutEffect, useMemo, useReducer, useRef, useEffect } from 'react';
 
+type SetterRef<T extends TargetObj> = { current: Proxied<T> };
+type GetterRef<T extends TargetObj> = { current: Proxied<T> };
 type UpdateFn<T extends TargetObj> = (draft: Proxied<T>) => void;
-type ReactiveReturn<T extends TargetObj> = [Proxied<T>, (draft: UpdateFn<T>) => void];
+type InitObj<T extends TargetObj> = T | PrimitiveType | null | undefined;
+type SetState<T extends TargetObj> = (draft: InitObj<T> | UpdateFn<T>) => void;
+type ReactiveReturn<T extends TargetObj> = [GetterRef<T>, SetState<T>];
 
 const useSafeUpdate = () => {
   const [, forceUpdate] = useReducer(x => x + 1, 0);
@@ -43,25 +49,50 @@ const recycleDispatch = <T extends TargetObj>(core: Core<T> | undefined, dispatc
   }
 };
 
-const useReactive = <T extends TargetObj>(initObj: T) => {
+const updateAccessor = <T extends TargetObj>(initObj: InitObj<T>, dispatchFn: DispatchFn, setState: (fn: InitObj<T> | UpdateFn<T>) => void, core: React.MutableRefObject<Core<T> | undefined>, setterRef: SetterRef<T>, getterRef: GetterRef<T>) => {
+  if (initObj === undefined || initObj === null) {
+    setterRef.current = initObj as any;
+    getterRef.current = initObj as any;
+    return [getterRef, setState];
+  }
+  let target = initObj;
+  if (isPrimitive(target)) {
+    target = { value: target } as unknown as T;
+  }
+  if (core.current === undefined) {
+    const initSubscribePlugin = new SubscribePlugin<T>();
+    const initReactivePlugin = new ReactivePlugin<T>();
+    core.current = new Core<T>([initSubscribePlugin, initReactivePlugin]);
+  }
+  const setter = core.current.createSetter(target);
+  const getter = core.current.createGetter(target);
+  const getterId = core.current.getterIdMap.get(getter)!;
+  const reactivePlugin = core.current.getPlugin(ReactivePlugin)!;
+  reactivePlugin.updateDispatcher(getterId, dispatchFn);
+
+  setterRef.current = setter;
+  getterRef.current = getter;
+};
+
+const useReactive = <T extends TargetObj>(initObj: InitObj<T> = undefined): [Proxied<T>, SetState<T>] => {
   const coreRef = useRef<Core<T>>();
   const safeUpdate = useSafeUpdate();
   recycleDispatch(coreRef.current, safeUpdate);
 
-  const result = useMemo<ReactiveReturn<T>>(() => {
-    const subscribePlugin = new SubscribePlugin<T>();
-    const reactivePlugin = new ReactivePlugin<T>();
-    const core = new Core<T>([subscribePlugin, reactivePlugin]);
-    const setter = core.createSetter(initObj);
-    const gettter = core.createGetter(initObj);
-    const getterId = core.getterIdMap.get(initObj)!;
-    reactivePlugin.updateDispatcher(getterId, safeUpdate);
-    const setState = (fn: UpdateFn<T>): void => {
-      fn(setter);
+  const [getter, setter] = useMemo<ReactiveReturn<T>>(() => {
+    const setterRef: SetterRef<T> = {} as any;
+    const getterRef: GetterRef<T> = {} as any;
+    const setState = (fn: InitObj<T> | UpdateFn<T>): void => {
+      if (isFunction(fn)) {
+        fn(setterRef.current);
+        return;
+      }
+      updateAccessor(fn, safeUpdate, setState, coreRef, setterRef, getterRef);
+      safeUpdate();
     };
 
-    coreRef.current = core;
-    return [gettter, setState];
+    updateAccessor(initObj, safeUpdate, setState, coreRef, setterRef, getterRef);
+    return [getterRef, setState];
   }, []);
 
   useEffect(() => {
@@ -71,14 +102,14 @@ const useReactive = <T extends TargetObj>(initObj: T) => {
     };
   }, []);
 
-  return result;
+  return [getter?.current, setter];
 };
 
 const reactiveMemo = <P extends TargetObj>(Component: FunctionComponent<P>) => {
   return memo((props: P) => {
-    const coreRef = useRef<Core<P>>();
+    // const coreRef = useRef<Core<P>>();
     const safeUpdate = useSafeUpdate();
-    recycleDispatch(coreRef.current, safeUpdate);
+    // recycleDispatch(coreRef.current, safeUpdate);
 
     const _props = useMemo(() => {
       console.log('重新计算props');
@@ -89,7 +120,7 @@ const reactiveMemo = <P extends TargetObj>(Component: FunctionComponent<P>) => {
           const core = getCoreInstance(proxyTarget);
           const target = toRaw(proxyTarget);
           const getter = core.createGetter(target);
-          const getterId = core.getterIdMap.get(target)!;
+          const getterId = core.getterIdMap.get(getter)!;
           const reactivePlugin = core.getPlugin(ReactivePlugin);
           reactivePlugin.updateDispatcher(getterId, safeUpdate);
           ret[key] = getter;
@@ -102,7 +133,7 @@ const reactiveMemo = <P extends TargetObj>(Component: FunctionComponent<P>) => {
 
     useEffect(() => {
       return () => {
-        recycleDispatch(coreRef.current, safeUpdate);
+        // recycleDispatch(coreRef.current, safeUpdate);
       };
     }, []);
 

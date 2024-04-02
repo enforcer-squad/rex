@@ -28,15 +28,14 @@ class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
     }
     console.log('没有path');
     return '';
-    const currentPath = parentPath ? `${parentPath}.${prop as string}` : prop;
-    return currentPath as string;
+    // const currentPath = parentPath ? `${parentPath}.${prop as string}` : prop;
+    // return currentPath as string;
   };
 
   get: IPlugin<T>['get'] = (context, next, target, prop, receiver) => {
     next(context, next, target, prop, receiver);
 
     if (isObject(context.value)) {
-      // console.log(target, prop);
       const parentPath = this.getPath(target);
       this.pathsMap.set(target[prop], `${parentPath}.${prop as string}`);
     }
@@ -53,7 +52,6 @@ class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
         });
       });
     }
-    // console.log('set', currentPath);
   };
 }
 

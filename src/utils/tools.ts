@@ -4,9 +4,13 @@ const isObject = (value: unknown): value is object => typeof value === 'object' 
 
 const isSymbol = (value: unknown): value is symbol => typeof value === 'symbol';
 
-const isPrimitive = (value: any) => {
-  return (typeof value !== 'object' && typeof value !== 'function') || value === null;
-};
+// const isPrimitive = (value: any) => {
+//   return (typeof value !== 'object' && typeof value !== 'function') || value === null;
+// };
+
+function isPrimitive(value: any): value is string | number | boolean {
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
+}
 
 const isFunctionProp = (target: any, prop: any): boolean => {
   return isFunction(Reflect.get(target, prop));

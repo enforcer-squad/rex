@@ -1,5 +1,7 @@
 import type Core from '.';
 
+type PrimitiveType = string | number | boolean;
+
 type TargetObj = Record<string, any>;
 
 type Context = { value: any };
@@ -14,7 +16,7 @@ type Handler = (context: Context, next: Handler, ...args: any[]) => void;
 
 type GetHandler<T extends TargetObj> = (context: Context, next: GetHandler<T>, target: T, p: keyof T, receiver: any) => void;
 type SetHandler<T extends TargetObj> = (context: Context, next: SetHandler<T>, target: T, p: keyof T, newValue: any, receiver: any) => void;
-type OwnKeysHandler<T extends TargetObj> = (context: Context, next: OwnKeysHandler<T>, target: T) => void;
+type OwnKeysHandler<T extends TargetObj> = (context: Context, next: OwnKeysHandler<T>, target: T, receiver: any) => void;
 type DeleteHandler<T extends TargetObj> = (context: Context, next: DeleteHandler<T>, target: T, p: keyof T) => void;
 type ApplyHandler<T extends TargetObj> = (context: Context, next: ApplyHandler<T>, target: (...args: any[]) => any, thisArg: T | undefined, argArray: any[], rootProxyRef: T) => any;
 type InitHandler<T extends TargetObj> = (context: Context, next: InitHandler<T>, target: T, handler: ProxyHandler<T>) => void;
@@ -95,6 +97,6 @@ const execute = (handlers: Handler[], ...args: any[]) => {
 //   return middlewares.filter(fn => fn !== middleware) as HandlerFunction<T, K>;
 // }
 
-export type { TargetObj, Context, Handler, GetHandler, SetHandler, OwnKeysHandler, DeleteHandler, ApplyHandler, InitHandler, IPlugin, Handlers, Proxied, DispatchFn };
+export type { PrimitiveType, TargetObj, Context, Handler, GetHandler, SetHandler, OwnKeysHandler, DeleteHandler, ApplyHandler, InitHandler, IPlugin, Handlers, Proxied, DispatchFn };
 
 export { getBaseHandler, execute };

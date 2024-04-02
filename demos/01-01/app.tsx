@@ -16,21 +16,22 @@ interface PropTypes {
 
 const Test1: FC<PropTypes> = reactiveMemo(({ person }) => {
   console.log('render Test1');
-  return <div>{person.name}</div>;
+  // return <div>I am test1 {person?.name}</div>;
+  return <div>I am test1</div>;
 });
 
 const Test2: FC<PropTypes> = reactiveMemo(({ person }) => {
   console.log('render Test2');
   useWatch(() => {
-    console.log('Test2', person.name);
+    console.log('Test2', person?.age);
   }, [person]);
-  return <div>123</div>;
+  return <div>I am test2</div>;
 });
 
 const App = () => {
   console.log('render App');
 
-  const [index, setIndex] = useState(0);
+  // const [index, setIndex] = useState(0);
   const [state, setState] = useReactive({
     person: { name: 'xxx', age: 10 },
     test: {
@@ -41,6 +42,11 @@ const App = () => {
     arr: [3, 2, 1],
     count: 0,
   });
+
+  // const [state, setState] = useReactive();
+  // const [state, setState] = useReactive(12);
+  // const [any, setAny] = useReactive(null);
+  // console.log(any);
 
   // console.log(Object.keys(state));
   //
@@ -63,7 +69,62 @@ const App = () => {
   // console.log('render App', person, window.pathsMap.get(toRaw(state)));
   return (
     <div style={{ padding: '10px' }}>
-      <div>{state.arr[index]}</div>
+      <div>{state?.person?.name}</div>
+      <div>{state?.person?.age}</div>
+      {/* <div>{state?.count}</div> */}
+      {/* <div>{state?.value}</div> */}
+      <Test1 person={state?.person} />
+      <Test2 person={state?.person} />
+      <Button
+        onClick={() => {
+          setState(undefined);
+          // setState({ count: 123 } as any);
+          // setState(draft => draft.count++);
+          // setState({
+          //   person: { name: 'xxx', age: 10 },
+          //   test: {
+          //     a: {
+          //       b: 1,
+          //     },
+          //   },
+          //   arr: [3, 2, 1],
+          //   count: 0,
+          // });
+        }}>
+        add count
+      </Button>
+      <Button
+        onClick={() => {
+          // setState(12);
+          setState({
+            person: { name: 'xxx', age: 10 },
+            test: {
+              a: {
+                b: 1,
+              },
+            },
+            arr: [3, 2, 1],
+            count: 0,
+          });
+        }}>
+        add count 12
+      </Button>
+      <Button
+        type="primary"
+        onClick={() => {
+          setState(draft => (draft.person.name = 'yyy'));
+        }}>
+        Change Name
+      </Button>
+      <Button
+        type="primary"
+        onClick={() => {
+          setState(draft => draft.person.age++);
+          // setState(draft => draft.count++);
+        }}>
+        Change Age
+      </Button>
+      {/* <div>{state.arr[index]}</div>
       <Button
         onClick={() => {
           setState(draft => {
@@ -77,7 +138,7 @@ const App = () => {
           setIndex(1);
         }}>
         change index to 1
-      </Button>
+      </Button> */}
       {/* <div>测试用例 访问一个不存在的key 然后观察响应式能力</div>
       <span>{(state as any).nonKey}</span>
       <Button

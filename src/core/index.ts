@@ -6,7 +6,7 @@ import { getBaseHandler, execute } from './plugins';
 class Core<T extends TargetObj> {
   setterProxyCache = new WeakMap<T, Proxied<T>>();
   getterProxyCache = new Map<string, WeakMap<T, Proxied<T>>>();
-  getterIdMap = new WeakMap<T, string>();
+  getterIdMap = new WeakMap<Proxied<T>, string>();
 
   handlers: Handlers<T>;
 
@@ -176,14 +176,14 @@ class Core<T extends TargetObj> {
     const cache = getterProxyCache.get(getterId) || new WeakMap<T, Proxied<T>>();
     cache.set(initObj, proxyObject);
     getterProxyCache.set(getterId, cache);
-    getterIdMap.set(initObj, getterId);
+    getterIdMap.set(proxyObject, getterId);
 
     return proxyObject;
   }
 }
 
 const isRex = <T extends TargetObj>(target: Proxied<T>) => {
-  return target.__isRex;
+  return target?.__isRex;
 };
 
 const toRaw = <T extends TargetObj>(target: Proxied<T>) => {

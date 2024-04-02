@@ -2,6 +2,7 @@ import type { TargetObj, Proxied } from '@/core/plugins';
 import { subscribe } from '@/plugins/subscribe';
 import { useCallback, useEffect, useRef } from 'react';
 import { collectionState } from '@/plugins/reactive';
+import { isRex } from '@/core';
 
 type EffectFn = () => void | EffectFn;
 
@@ -20,15 +21,25 @@ const useWatch = (callback: EffectFn, deps: Array<Proxied<TargetObj>>) => {
   }
 
   const notify = useCallback(() => {
+    console.log('执行回调');
+
     isDirty.current = true;
   }, []);
 
-  // TODO: 卸载待处理
   useEffect(() => {
     deps.forEach(dep => {
-      subscribe(dep, notify);
+      if (isRex(dep)) {
+        console.log('开始监听', dep);
+
+        subscribe(dep, notify);
+      }
     });
-  }, []);
+    console.log('xxxx', deps);
+
+    return () => {
+      // 取消监听
+    };
+  }, [...deps]);
 };
 
 export { useWatch };
