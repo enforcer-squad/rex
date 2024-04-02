@@ -105,6 +105,7 @@ const useReactive = <T extends TargetObj>(initObj: InitObj<T> = undefined): [Pro
   return [getter?.current, setter];
 };
 
+// TODO: mome的多对象dispatch回收问题
 const reactiveMemo = <P extends TargetObj>(Component: FunctionComponent<P>) => {
   return memo((props: P) => {
     // const coreRef = useRef<Core<P>>();
