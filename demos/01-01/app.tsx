@@ -69,11 +69,11 @@ const App = () => {
   // console.log('render App', person, window.pathsMap.get(toRaw(state)));
   return (
     <div style={{ padding: '10px' }}>
-      <div>{state?.person?.name}</div>
+      {/* <div>{state?.person?.name}</div> */}
       <div>{state?.person?.age}</div>
       {/* <div>{state?.count}</div> */}
       {/* <div>{state?.value}</div> */}
-      <Test1 person={state?.person} />
+      {/* <Test1 person={state?.person} /> */}
       <Test2 person={state?.person} />
       <Button
         onClick={() => {

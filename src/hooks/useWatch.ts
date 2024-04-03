@@ -21,8 +21,7 @@ const useWatch = (callback: EffectFn, deps: Array<Proxied<TargetObj>>) => {
   }
 
   const notify = useCallback(() => {
-    console.log('执行回调');
-
+    console.log('触犯回调');
     isDirty.current = true;
   }, []);
 
@@ -37,6 +36,9 @@ const useWatch = (callback: EffectFn, deps: Array<Proxied<TargetObj>>) => {
     console.log('xxxx', deps);
 
     return () => {
+      console.log('重置状态');
+
+      isDirty.current = true;
       // 取消监听
     };
   }, [...deps]);

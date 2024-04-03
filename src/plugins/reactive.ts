@@ -21,8 +21,10 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
     this.dispatchersMap.set(getterId, dispatch);
   };
 
-  getDispatcher = (target: Proxied<T>) => {
-    const getterId = this.core?.getterIdMap.get(target);
+  getDispatcher = (proxyTarget: Proxied<T>) => {
+    const getterId = this.core?.getterIdMap.get(proxyTarget);
+    console.log('注册更新', getterId);
+
     const dispatcher = this.dispatchersMap.get(getterId!);
     return dispatcher;
   };

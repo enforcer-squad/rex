@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prefer-const */
 import Core, { getCoreInstance, isRex, toRaw } from '@/core';
 import { type PrimitiveType, type DispatchFn, type Proxied, type TargetObj } from '@/core/plugins';
@@ -47,6 +48,17 @@ const recycleDispatch = <T extends TargetObj>(core: Core<T> | undefined, dispatc
     });
     reactivePlugin.recycleMap.delete(dispatchFn);
   }
+};
+
+const recycleDispatchBatch = <P extends TargetObj>(props: P, dispatchFn: DispatchFn) => {
+  Object.keys(props).forEach(key => {
+    const prop = props[key];
+    if (isRex(prop)) {
+      const proxyTarget = prop;
+      const core = getCoreInstance(proxyTarget);
+      recycleDispatch(core, dispatchFn);
+    }
+  });
 };
 
 const updateAccessor = <T extends TargetObj>(initObj: InitObj<T>, dispatchFn: DispatchFn, setState: (fn: InitObj<T> | UpdateFn<T>) => void, core: React.MutableRefObject<Core<T> | undefined>, setterRef: SetterRef<T>, getterRef: GetterRef<T>) => {
@@ -108,9 +120,8 @@ const useReactive = <T extends TargetObj>(initObj: InitObj<T> = undefined): [Pro
 // TODO: mome的多对象dispatch回收问题
 const reactiveMemo = <P extends TargetObj>(Component: FunctionComponent<P>) => {
   return memo((props: P) => {
-    // const coreRef = useRef<Core<P>>();
     const safeUpdate = useSafeUpdate();
-    // recycleDispatch(coreRef.current, safeUpdate);
+    // recycleDispatchBatch(props, safeUpdate);
 
     const _props = useMemo(() => {
       console.log('重新计算props');
@@ -123,6 +134,7 @@ const reactiveMemo = <P extends TargetObj>(Component: FunctionComponent<P>) => {
           const getter = core.createGetter(target);
           const getterId = core.getterIdMap.get(getter)!;
           const reactivePlugin = core.getPlugin(ReactivePlugin);
+          console.log('getterId', getterId);
           reactivePlugin.updateDispatcher(getterId, safeUpdate);
           ret[key] = getter;
         } else {
