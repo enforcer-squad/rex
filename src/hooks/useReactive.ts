@@ -79,6 +79,8 @@ const updateAccessor = <T extends TargetObj>(initObj: InitObj<T>, dispatchFn: Di
   const setter = core.current.createSetter(target);
   const getter = core.current.createGetter(target);
   const getterId = core.current.getterIdMap.get(getter)!;
+  console.log('init', getterId, core.current.getterIdMap.get(setter));
+
   const reactivePlugin = core.current.getPlugin(ReactivePlugin)!;
   reactivePlugin.updateDispatcher(getterId, dispatchFn);
 
@@ -134,7 +136,6 @@ const reactiveMemo = <P extends TargetObj>(Component: FunctionComponent<P>) => {
           const getter = core.createGetter(target);
           const getterId = core.getterIdMap.get(getter)!;
           const reactivePlugin = core.getPlugin(ReactivePlugin);
-          console.log('getterId', getterId);
           reactivePlugin.updateDispatcher(getterId, safeUpdate);
           ret[key] = getter;
         } else {

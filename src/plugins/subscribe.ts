@@ -6,7 +6,7 @@ import type { TargetObj, IPlugin, Proxied, DispatchFn } from '@/core/plugins';
 import { isObject } from '@/utils/tools';
 import { type FunctionComponent, memo, useCallback, useLayoutEffect, useMemo, useReducer, useRef, useEffect } from 'react';
 
-type GetPath<T extends TargetObj> = (target: T, prop?: keyof T) => string;
+type GetPath<T extends TargetObj> = (receiver: Proxied<T>, target?: T, prop?: keyof T) => string;
 
 class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
   core: Core<T> | undefined;
@@ -17,8 +17,8 @@ class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
     this.core = core;
   }
 
-  private readonly getPath: GetPath<T> = (target, prop) => {
-    const parentPath = this.pathsMap.get(target) || this.core!.getterIdMap.get(target);
+  private readonly getPath: GetPath<T> = (receiver, target, prop) => {
+    const parentPath = (target && this.pathsMap.get(target)) || this.core!.getterIdMap.get(receiver);
     if (parentPath) {
       let path = parentPath;
       if (prop !== undefined) {
@@ -34,16 +34,20 @@ class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
 
   get: IPlugin<T>['get'] = (context, next, target, prop, receiver) => {
     next(context, next, target, prop, receiver);
+    console.log(target[prop], receiver);
 
     if (isObject(context.value)) {
-      const parentPath = this.getPath(target);
+      const parentPath = this.getPath(receiver, target);
+      console.log('getPath', `${parentPath}.${prop as string}`, target, prop);
       this.pathsMap.set(target[prop], `${parentPath}.${prop as string}`);
     }
   };
 
   set: IPlugin<T>['set'] = (context, next, target, prop, newValue, receiver) => {
     next(context, next, target, prop, newValue, receiver);
-    const currentPath = this.getPath(target, prop);
+    const currentPath = this.getPath(receiver, target, prop);
+    console.log(currentPath, 'set', target, prop);
+
     if (currentPath) {
       const matchingKeys = Array.from(this.listenersMap.keys()).filter(key => currentPath.includes(key));
       matchingKeys.forEach(matchKey => {
@@ -58,7 +62,9 @@ class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
 const subscribe = <T extends TargetObj>(proxyTarget: Proxied<T>, callback: (...args: any[]) => void) => {
   const core = getCoreInstance(proxyTarget);
   const subscribePlugin = core.getPlugin(SubscribePlugin);
-  const subscribePath = subscribePlugin.getPath(toRaw(proxyTarget));
+  const subscribePath = subscribePlugin.getPath(proxyTarget);
+  console.log('subscribePath', subscribePath);
+
   if (subscribePath) {
     const pathListeners = subscribePlugin.listenersMap.get(subscribePath) || new Set<DispatchFn>();
     pathListeners.add(callback);

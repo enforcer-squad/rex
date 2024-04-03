@@ -1,14 +1,13 @@
 import type { TargetObj, Proxied } from '@/core/plugins';
 import { subscribe } from '@/plugins/subscribe';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect } from 'react';
 import { collectionState } from '@/plugins/reactive';
 import { isRex } from '@/core';
 
 type EffectFn = () => void | EffectFn;
 
 const useWatch = (callback: EffectFn, deps: Array<Proxied<TargetObj>>) => {
-  const isDirty = useRef(true);
-  if (isDirty.current) {
+  const executeCallback = useCallback(() => {
     console.log('重新执行');
     if (deps.length === 0) {
       collectionState.enable = false;
@@ -17,28 +16,21 @@ const useWatch = (callback: EffectFn, deps: Array<Proxied<TargetObj>>) => {
     } else {
       callback();
     }
-    isDirty.current = false;
-  }
-
-  const notify = useCallback(() => {
-    console.log('触犯回调');
-    isDirty.current = true;
   }, []);
 
   useEffect(() => {
+    executeCallback();
     deps.forEach(dep => {
       if (isRex(dep)) {
         console.log('开始监听', dep);
-
-        subscribe(dep, notify);
+        subscribe(dep, () => {
+          console.log('cccccccc');
+          executeCallback();
+        });
       }
     });
-    console.log('xxxx', deps);
-
     return () => {
-      console.log('重置状态');
-
-      isDirty.current = true;
+      console.log('TODO 取消监听');
       // 取消监听
     };
   }, [...deps]);

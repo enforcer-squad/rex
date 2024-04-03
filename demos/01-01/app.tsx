@@ -42,6 +42,7 @@ const App = () => {
     arr: [3, 2, 1],
     count: 0,
   });
+  console.log(state);
 
   // const [state, setState] = useReactive();
   // const [state, setState] = useReactive(12);
@@ -70,7 +71,7 @@ const App = () => {
   return (
     <div style={{ padding: '10px' }}>
       {/* <div>{state?.person?.name}</div> */}
-      <div>{state?.person?.age}</div>
+      {/* <div>{state?.person?.age}</div> */}
       {/* <div>{state?.count}</div> */}
       {/* <div>{state?.value}</div> */}
       {/* <Test1 person={state?.person} /> */}
