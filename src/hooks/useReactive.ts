@@ -79,8 +79,6 @@ const updateAccessor = <T extends TargetObj>(initObj: InitObj<T>, dispatchFn: Di
   const setter = core.current.createSetter(target);
   const getter = core.current.createGetter(target);
   const getterId = core.current.getterIdMap.get(getter)!;
-  console.log('init', getterId, core.current.getterIdMap.get(setter));
-
   const reactivePlugin = core.current.getPlugin(ReactivePlugin)!;
   reactivePlugin.updateDispatcher(getterId, dispatchFn);
 

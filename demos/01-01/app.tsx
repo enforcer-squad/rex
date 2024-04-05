@@ -34,6 +34,12 @@ const App = () => {
   // const [index, setIndex] = useState(0);
   const [state, setState] = useReactive({
     person: { name: 'xxx', age: 10 },
+    nested: {
+      person: {
+        name: 'xxx',
+        age: 10,
+      },
+    },
     test: {
       a: {
         b: 1,
@@ -42,8 +48,15 @@ const App = () => {
     arr: [3, 2, 1],
     count: 0,
   });
-  console.log(state);
-
+  const {
+    nested: { person: nestedPerson },
+    person,
+  } = state;
+  useEffect(() => {
+    subscribe(person, () => {
+      console.log('state changed');
+    });
+  }, []);
   // const [state, setState] = useReactive();
   // const [state, setState] = useReactive(12);
   // const [any, setAny] = useReactive(null);
@@ -75,7 +88,7 @@ const App = () => {
       {/* <div>{state?.count}</div> */}
       {/* <div>{state?.value}</div> */}
       {/* <Test1 person={state?.person} /> */}
-      <Test2 person={state?.person} />
+      <Test2 person={nestedPerson} />
       <Button
         onClick={() => {
           setState(undefined);
@@ -99,6 +112,12 @@ const App = () => {
           // setState(12);
           setState({
             person: { name: 'xxx', age: 10 },
+            nested: {
+              person: {
+                name: 'xxx',
+                age: 10,
+              },
+            },
             test: {
               a: {
                 b: 1,
@@ -120,7 +139,8 @@ const App = () => {
       <Button
         type="primary"
         onClick={() => {
-          setState(draft => draft.person.age++);
+          // setState(draft => draft.person.age++);
+          setState(draft => draft.nested.person.age++);
           // setState(draft => draft.count++);
         }}>
         Change Age
