@@ -1,35 +1,37 @@
 import type { TargetObj, Proxied } from '@/core/plugins';
 import { subscribe } from '@/plugins/subscribe';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { collectionState } from '@/plugins/reactive';
 import { isRex } from '@/core';
 
 type EffectFn = () => void | EffectFn;
 
 const useWatch = (callback: EffectFn, deps: Array<Proxied<TargetObj>>) => {
+  const refUnSubs = useRef(new Set<() => void>());
   useEffect(() => {
     deps.forEach(dep => {
       if (isRex(dep)) {
-        console.log('开始监听', dep);
-        subscribe(
+        const unSub = subscribe(
           dep,
           () => {
-            console.log('cccccccc');
-            if (deps.length === 0) {
-              collectionState.enable = false;
-              callback();
-              collectionState.enable = true;
-            } else {
-              callback();
-            }
+            collectionState.enable = false;
+            callback();
+            collectionState.enable = true;
           },
           false,
         );
+
+        const unSubCB = () => {
+          unSub();
+          refUnSubs.current.delete(unSubCB);
+        };
+        refUnSubs.current.add(unSubCB);
       }
     });
     return () => {
-      console.log('TODO 取消监听');
-      // TODO:取消监听
+      for (const unSub of refUnSubs.current) {
+        unSub();
+      }
     };
   }, [...deps]);
 };

@@ -22,10 +22,13 @@ const Test1: FC<PropTypes> = reactiveMemo(({ person }) => {
 
 const Test2: FC<PropTypes> = reactiveMemo(({ person }) => {
   console.log('render Test2');
+  const { age } = person;
+  // const computedResult = useComputed(() => person.age, [person]);
   useWatch(() => {
-    console.log('Test2', person?.age);
+    console.log('Test2', person.age);
   }, [person]);
-  return <div>I am test2</div>;
+
+  return <div>I am test2,{age}</div>;
 });
 
 const App = () => {
@@ -57,6 +60,7 @@ const App = () => {
       console.log('state changed');
     });
   }, []);
+
   // const [state, setState] = useReactive();
   // const [state, setState] = useReactive(12);
   // const [any, setAny] = useReactive(null);
@@ -133,6 +137,7 @@ const App = () => {
         type="primary"
         onClick={() => {
           setState(draft => (draft.person.name = 'yyy'));
+          // setState(draft => (draft.nested.person.name = 'nested yyy'));
         }}>
         Change Name
       </Button>

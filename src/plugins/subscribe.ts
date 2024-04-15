@@ -61,9 +61,11 @@ class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
   set: IPlugin<T>['set'] = (context, next, target, prop, newValue, receiver) => {
     next(context, next, target, prop, newValue, receiver);
     const currentPath = this.getPath(target, prop);
-    // console.log('currentPath', currentPath, 'set', target, prop);
+    console.log('currentPath', currentPath, 'set', target, prop);
 
     if (currentPath) {
+      console.log('keys', this.listenersMap.keys());
+
       const matchingKeys = Array.from(this.listenersMap.keys()).filter(key => this.isMatch(key, currentPath));
       matchingKeys.forEach(matchKey => {
         this.listenersMap.get(matchKey)?.forEach(cb => {
@@ -75,23 +77,30 @@ class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
 }
 
 // TODO:值类型监听
-// TODO:取消订阅
-// TODO:多次订阅同一对象如何区分，方便取消时候不要换乱
 const subscribe = <T extends TargetObj>(proxyTarget: Proxied<T>, callback: (...args: any[]) => void, lazy: boolean = true) => {
   const core = getCoreInstance(proxyTarget);
   const subscribePlugin = core.getPlugin(SubscribePlugin);
   const target = toRaw(proxyTarget);
   const subscribePath = subscribePlugin.getPath(target);
-  // console.log('subscribePath', subscribePath);
+  console.log('subscribePath', subscribePath);
 
   if (subscribePath) {
     const pathListeners = subscribePlugin.listenersMap.get(subscribePath) || new Set<DispatchFn>();
+    console.log('pathListeners', pathListeners);
+
     pathListeners.add(callback);
     subscribePlugin.listenersMap.set(subscribePath, pathListeners);
     if (!lazy) {
       callback();
     }
+    return () => {
+      const pathListeners = subscribePlugin.listenersMap.get(subscribePath);
+      if (pathListeners) {
+        pathListeners.delete(callback);
+      }
+    };
   }
+  return () => undefined;
 };
 
 export { subscribe, SubscribePlugin };
