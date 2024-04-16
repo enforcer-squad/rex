@@ -8,9 +8,13 @@ const isSymbol = (value: unknown): value is symbol => typeof value === 'symbol';
 //   return (typeof value !== 'object' && typeof value !== 'function') || value === null;
 // };
 
-function isPrimitive(value: any): value is string | number | boolean {
+const isPrimitive = (value: any): value is string | number | boolean => {
   return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
-}
+};
+
+const isPrimitiveValue = (value: any) => {
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
+};
 
 const isFunctionProp = (target: any, prop: any): boolean => {
   return isFunction(Reflect.get(target, prop));
@@ -25,4 +29,4 @@ const isArrayTraverse = (target: any, prop: any): boolean => {
   return false;
 };
 
-export { isFunction, isObject, isSymbol, isPrimitive, isFunctionProp, isArrayTraverse };
+export { isFunction, isObject, isSymbol, isPrimitive, isPrimitiveValue, isFunctionProp, isArrayTraverse };

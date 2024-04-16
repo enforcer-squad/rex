@@ -4,7 +4,7 @@ import Core, { getCoreInstance, isRex, toRaw } from '@/core';
 import { type PrimitiveType, type DispatchFn, type Proxied, type TargetObj } from '@/core/plugins';
 import { ReactivePlugin } from '@/plugins/reactive';
 import { SubscribePlugin } from '@/plugins/subscribe';
-import { isFunction, isPrimitive } from '@/utils/tools';
+import { isFunction, isPrimitive, isPrimitiveValue } from '@/utils/tools';
 import { type FunctionComponent, memo, useCallback, useLayoutEffect, useMemo, useReducer, useRef, useEffect } from 'react';
 
 type SetterRef<T extends TargetObj> = { current: Proxied<T> };
@@ -63,12 +63,21 @@ const recycleDispatchBatch = <P extends TargetObj>(props: P, dispatchFn: Dispatc
 
 const updateAccessor = <T extends TargetObj>(initObj: InitObj<T>, dispatchFn: DispatchFn, setState: (fn: InitObj<T> | UpdateFn<T>) => void, core: React.MutableRefObject<Core<T> | undefined>, setterRef: SetterRef<T>, getterRef: GetterRef<T>) => {
   if (initObj === undefined || initObj === null) {
+    // TODO 待验证 值类型和引用类型赋值undefined会怎样
+    if (Reflect.has(setterRef, 'current') && (setterRef.current as any) === initObj) {
+      return false;
+    }
     setterRef.current = initObj as any;
     getterRef.current = initObj as any;
-    return [getterRef, setState];
+
+    return true;
   }
   let target = initObj;
   if (isPrimitive(target)) {
+    if (setterRef.current) {
+      (setterRef.current as any).value = target;
+      return false;
+    }
     target = { value: target } as unknown as T;
   }
   if (core.current === undefined) {
@@ -84,6 +93,7 @@ const updateAccessor = <T extends TargetObj>(initObj: InitObj<T>, dispatchFn: Di
 
   setterRef.current = setter;
   getterRef.current = getter;
+  return true;
 };
 
 const useReactive = <T extends TargetObj>(initObj: InitObj<T> = undefined): [Proxied<T>, SetState<T>] => {
@@ -99,8 +109,8 @@ const useReactive = <T extends TargetObj>(initObj: InitObj<T> = undefined): [Pro
         fn(setterRef.current);
         return;
       }
-      updateAccessor(fn, safeUpdate, setState, coreRef, setterRef, getterRef);
-      safeUpdate();
+      const needUpdate = updateAccessor(fn, safeUpdate, setState, coreRef, setterRef, getterRef);
+      needUpdate && safeUpdate();
     };
 
     updateAccessor(initObj, safeUpdate, setState, coreRef, setterRef, getterRef);

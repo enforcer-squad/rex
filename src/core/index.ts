@@ -86,7 +86,6 @@ class Core<T extends TargetObj> {
           return Reflect.set(target, prop, newValue, receiver);
         }
         const prevValue = target[prop];
-
         if (prevValue === newValue) {
           return true;
         }
@@ -182,7 +181,7 @@ class Core<T extends TargetObj> {
   }
 }
 
-const isRex = <T extends TargetObj>(target: Proxied<T>) => {
+const isRex = (target: any) => {
   return target?.__isRex;
 };
 

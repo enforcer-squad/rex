@@ -21,14 +21,25 @@ const Test1: FC<PropTypes> = reactiveMemo(({ person }) => {
 });
 
 const Test2: FC<PropTypes> = reactiveMemo(({ person }) => {
+  const [count, setCount] = useReactive(0);
+  // const [a, setA] = useReactive({ a: 1 });
   console.log('render Test2');
-  const { age } = person;
   // const computedResult = useComputed(() => person.age, [person]);
+  console.log(count?.value);
+
   useWatch(() => {
     console.log('Test2', person.age);
-  }, [person]);
+  }, [person, count?.value]);
 
-  return <div>I am test2</div>;
+  return (
+    <div>
+      <div>I am test2</div>
+      <Button onClick={() => setCount(10)}>sub count</Button>
+      <Button onClick={() => setCount(undefined)}>sub count1</Button>
+      {/* <Button onClick={() => setA({ a: 2 })}>sub count2</Button>
+      <Button onClick={() => setA(d => d.a++)}>sub count3</Button> */}
+    </div>
+  );
 });
 
 const App = () => {

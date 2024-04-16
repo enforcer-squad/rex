@@ -4,44 +4,57 @@ import { subscribe } from '@/plugins/subscribe';
 import { useEffect, useRef } from 'react';
 import { collectionState } from '@/plugins/reactive';
 import { isRex } from '@/core';
+import { isPrimitive } from '@/utils/tools';
 
 type EffectFn = () => void | EffectFn;
 
 type Deps<T extends TargetObj> = Array<Proxied<T> | PrimitiveType>;
 
-// const subDeps = <T extends TargetObj>(deps: Deps<T>) => {
-//   deps.forEach(dep => {
-//     if (isRex(dep)) {
-//       const unSub = subscribe(dep, () => {
-//         if (deps.length === 0) {
-//           collectionState.enable = false;
-//         }
-//         unmount.current = callback();
-//         if (deps.length === 0) {
-//           collectionState.enable = true;
-//         }
-//       });
+const subDeps = <T extends TargetObj>(callback: EffectFn, unMountRef: React.MutableRefObject<any>, callbackRef: React.MutableRefObject<Set<EffectFn>>, deps: Deps<T>) => {
+  deps.forEach(dep => {
+    if (!isPrimitive(dep) && isRex(dep)) {
+      const unSub = subscribe(dep, () => {
+        if (deps.length === 0) {
+          collectionState.enable = false;
+        }
+        unMountRef.current = callback();
+        if (deps.length === 0) {
+          collectionState.enable = true;
+        }
+      });
 
-//       const unSubCB = () => {
-//         unSub();
-//         refUnSubs.current.delete(unSubCB);
-//       };
+      const unSubCB = () => {
+        unSub();
+        callbackRef.current.delete(unSubCB);
+      };
 
-//       refUnSubs.current.add(unSubCB);
-//     }
-//   });
-// };
+      callbackRef.current.add(unSubCB);
+    }
+  });
+};
+
+const unSubDeps = (callbackRef: React.MutableRefObject<Set<EffectFn>>) => {
+  for (const unSub of callbackRef.current) {
+    unSub();
+  }
+};
 
 const useWatch = <T extends TargetObj>(callback: EffectFn, deps: Deps<T>) => {
-  const refUnSubs = useRef(new Set<EffectFn>());
-  const unmount = useRef<any>();
+  const unSubsRef = useRef(new Set<EffectFn>());
+  const unMountRef = useRef<any>();
 
   useEffect(() => {
+    subDeps(callback, unMountRef, unSubsRef, deps);
+    if (deps.length === 0) {
+      collectionState.enable = false;
+    }
+    unMountRef.current = callback();
+    if (deps.length === 0) {
+      collectionState.enable = true;
+    }
     return () => {
-      for (const unSub of refUnSubs.current) {
-        unSub();
-      }
-      unmount.current?.();
+      unSubDeps(unSubsRef);
+      unMountRef.current?.();
     };
   }, [...deps]);
 };
