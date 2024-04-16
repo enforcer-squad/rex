@@ -28,7 +28,7 @@ const Test2: FC<PropTypes> = reactiveMemo(({ person }) => {
     console.log('Test2', person.age);
   }, [person]);
 
-  return <div>I am test2,{age}</div>;
+  return <div>I am test2</div>;
 });
 
 const App = () => {
