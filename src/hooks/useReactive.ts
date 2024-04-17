@@ -63,7 +63,6 @@ const recycleDispatchBatch = <P extends TargetObj>(props: P, dispatchFn: Dispatc
 
 const updateAccessor = <T extends TargetObj>(initObj: InitObj<T>, dispatchFn: DispatchFn, setState: (fn: InitObj<T> | UpdateFn<T>) => void, core: React.MutableRefObject<Core<T> | undefined>, setterRef: SetterRef<T>, getterRef: GetterRef<T>) => {
   if (initObj === undefined || initObj === null) {
-    // TODO 待验证 值类型和引用类型赋值undefined会怎样
     if (Reflect.has(setterRef, 'current') && (setterRef.current as any) === initObj) {
       return false;
     }
@@ -119,7 +118,7 @@ const useReactive = <T extends TargetObj>(initObj: InitObj<T> = undefined): [Pro
 
   useEffect(() => {
     return () => {
-      // 应该不需要添加其他的了 weakmap加react函数释放
+      // 不需要添加其他的了 weakmap加react函数释放
       recycleDispatch(coreRef.current, safeUpdate);
     };
   }, []);
@@ -127,11 +126,13 @@ const useReactive = <T extends TargetObj>(initObj: InitObj<T> = undefined): [Pro
   return [getter?.current, setter];
 };
 
-// TODO: mome的多对象dispatch回收问题
 const reactiveMemo = <P extends TargetObj>(Component: FunctionComponent<P>) => {
   return memo((props: P) => {
+    const propsRef = useRef<P>({} as unknown as P);
     const safeUpdate = useSafeUpdate();
-    // recycleDispatchBatch(props, safeUpdate);
+    propsRef.current = props;
+
+    recycleDispatchBatch(props, safeUpdate);
 
     const _props = useMemo(() => {
       console.log('重新计算props');
@@ -155,7 +156,7 @@ const reactiveMemo = <P extends TargetObj>(Component: FunctionComponent<P>) => {
 
     useEffect(() => {
       return () => {
-        // recycleDispatch(coreRef.current, safeUpdate);
+        recycleDispatchBatch(propsRef.current, safeUpdate);
       };
     }, []);
 

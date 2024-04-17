@@ -10,10 +10,11 @@ type EffectFn = () => void | EffectFn;
 
 type Deps<T extends TargetObj> = Array<Proxied<T> | PrimitiveType>;
 
-const subDeps = <T extends TargetObj>(callback: EffectFn, unMountRef: React.MutableRefObject<any>, callbackRef: React.MutableRefObject<Set<EffectFn>>, deps: Deps<T>) => {
+const subDeps = <T extends TargetObj>(callback: EffectFn, unMountRef: React.MutableRefObject<any>, unSubsRef: React.MutableRefObject<Set<EffectFn>>, deps: Deps<T>) => {
   deps.forEach(dep => {
     if (!isPrimitive(dep) && isRex(dep)) {
       const unSub = subscribe(dep, () => {
+        // TODO? 是否将任务放入微任务队列中更好的模拟触发时机
         if (deps.length === 0) {
           collectionState.enable = false;
         }
@@ -25,16 +26,16 @@ const subDeps = <T extends TargetObj>(callback: EffectFn, unMountRef: React.Muta
 
       const unSubCB = () => {
         unSub();
-        callbackRef.current.delete(unSubCB);
+        unSubsRef.current.delete(unSubCB);
       };
 
-      callbackRef.current.add(unSubCB);
+      unSubsRef.current.add(unSubCB);
     }
   });
 };
 
-const unSubDeps = (callbackRef: React.MutableRefObject<Set<EffectFn>>) => {
-  for (const unSub of callbackRef.current) {
+const unSubDeps = (unSubsRef: React.MutableRefObject<Set<EffectFn>>) => {
+  for (const unSub of unSubsRef.current) {
     unSub();
   }
 };
@@ -58,5 +59,7 @@ const useWatch = <T extends TargetObj>(callback: EffectFn, deps: Deps<T>) => {
     };
   }, [...deps]);
 };
+
+export type { EffectFn, Deps };
 
 export { useWatch };

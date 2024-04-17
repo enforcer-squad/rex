@@ -10,32 +10,39 @@ import { toRaw } from '@/core';
 import { subscribe } from '@/plugins/subscribe';
 
 interface PropTypes {
-  person: { name: string; age: number };
-  t?: any;
+  // person: { name: string; age: number };
+  arr: number[];
+  index: number;
 }
 
-const Test1: FC<PropTypes> = reactiveMemo(({ person }) => {
-  console.log('render Test1');
+interface PropTypes1 {
+  person: { name: string; age: number };
+}
+
+const Test1: FC<PropTypes> = reactiveMemo(({ arr, index }) => {
+  console.log('render Test1', arr[index]);
   // return <div>I am test1 {person?.name}</div>;
   return <div>I am test1</div>;
 });
 
-const Test2: FC<PropTypes> = reactiveMemo(({ person }) => {
+const Test2: FC<PropTypes1> = reactiveMemo(({ person }) => {
   const [count, setCount] = useReactive(0);
   // const [a, setA] = useReactive({ a: 1 });
   console.log('render Test2');
-  // const computedResult = useComputed(() => person.age, [person]);
-  console.log(count?.value);
+  const computedResult = useComputed(() => person.age + count?.value, [person, count]);
+  // const computedResult = useComputed(() => person.age + count?.value, [person, count?.value]);
+  console.log('computedResult', computedResult);
 
-  useWatch(() => {
-    console.log('Test2', person.age);
-  }, [person, count?.value]);
+  // useWatch(() => {
+  //   console.log('Test2', person.age);
+  // }, [person, count?.value]);
 
   return (
     <div>
       <div>I am test2</div>
-      <Button onClick={() => setCount(10)}>sub count</Button>
-      <Button onClick={() => setCount(undefined)}>sub count1</Button>
+      <Button onClick={() => setCount(10)}>sub count1</Button>
+      <Button onClick={() => setCount(d => d.value++)}>sub count2</Button>
+      <Button onClick={() => setCount(undefined)}>sub count3</Button>
       {/* <Button onClick={() => setA({ a: 2 })}>sub count2</Button>
       <Button onClick={() => setA(d => d.a++)}>sub count3</Button> */}
     </div>
@@ -45,7 +52,7 @@ const Test2: FC<PropTypes> = reactiveMemo(({ person }) => {
 const App = () => {
   console.log('render App');
 
-  // const [index, setIndex] = useState(0);
+  const [index, setIndex] = useReactive(0);
   const [state, setState] = useReactive({
     person: { name: 'xxx', age: 10 },
     nested: {
@@ -62,15 +69,17 @@ const App = () => {
     arr: [3, 2, 1],
     count: 0,
   });
+
   const {
     nested: { person: nestedPerson },
     person,
+    arr,
   } = state;
-  useEffect(() => {
-    subscribe(person, () => {
-      console.log('state changed');
-    });
-  }, []);
+  // useEffect(() => {
+  //   subscribe(state, () => {
+  //     console.log('state changed');
+  //   });
+  // }, []);
 
   // const [state, setState] = useReactive();
   // const [state, setState] = useReactive(12);
@@ -102,8 +111,32 @@ const App = () => {
       {/* <div>{state?.person?.age}</div> */}
       {/* <div>{state?.count}</div> */}
       {/* <div>{state?.value}</div> */}
-      {/* <Test1 person={state?.person} /> */}
-      <Test2 person={nestedPerson} />
+      <Test1 arr={arr} index={index.value} />
+      {/* <Test2 person={nestedPerson} /> */}
+      <Button
+        onClick={() => {
+          setIndex(0);
+        }}>
+        set index 0
+      </Button>
+      <Button
+        onClick={() => {
+          setIndex(1);
+        }}>
+        set index 1
+      </Button>
+      <Button
+        onClick={() => {
+          setState(d => (d.arr[0] = Math.random()));
+        }}>
+        index 0
+      </Button>
+      <Button
+        onClick={() => {
+          setState(d => (d.arr[1] = Math.random()));
+        }}>
+        index 1
+      </Button>
       <Button
         onClick={() => {
           setState(undefined);

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type Core from '@/core';
 import { getCoreInstance, isRex, toRaw } from '@/core';
@@ -8,6 +7,7 @@ import { type FunctionComponent, memo, useCallback, useLayoutEffect, useMemo, us
 
 type GetPath<T extends TargetObj> = (target: T, prop?: keyof T) => string;
 
+const __ROOT__ = '__ROOT__';
 class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
   core: Core<T> | undefined;
   pathsMap = new WeakMap<T, string>();
@@ -34,15 +34,15 @@ class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
 
   private readonly getPath: GetPath<T> = (target, prop) => {
     const parentPath = this.pathsMap.get(target);
+    let path = '';
     if (parentPath) {
-      let path = parentPath;
-      if (prop !== undefined) {
-        path += `.${prop as string}`;
-      }
-      return path;
+      path += parentPath;
     }
-    console.log('没有path', target);
-    return '';
+    if (prop !== undefined) {
+      path += parentPath ? `.${prop as string}` : `${prop as string}`;
+    }
+    return path;
+
     // const currentPath = parentPath ? `${parentPath}.${prop as string}` : prop;
     // return currentPath as string;
   };
@@ -64,9 +64,7 @@ class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
     console.log('currentPath', currentPath, 'set', target, prop);
 
     if (currentPath) {
-      console.log('keys', this.listenersMap.keys());
-
-      const matchingKeys = Array.from(this.listenersMap.keys()).filter(key => this.isMatch(key, currentPath));
+      const matchingKeys = Array.from(this.listenersMap.keys()).filter(key => key === __ROOT__ || this.isMatch(key, currentPath));
       matchingKeys.forEach(matchKey => {
         this.listenersMap.get(matchKey)?.forEach(cb => {
           cb();
@@ -76,17 +74,18 @@ class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
   };
 }
 
-// TODO:值类型监听
 const subscribe = <T extends TargetObj>(proxyTarget: Proxied<T>, callback: (...args: any[]) => void, lazy: boolean = true) => {
   const core = getCoreInstance(proxyTarget);
   const subscribePlugin = core.getPlugin(SubscribePlugin);
   const target = toRaw(proxyTarget);
-  const subscribePath = subscribePlugin.getPath(target);
+  let subscribePath = subscribePlugin.getPath(target);
+  if (!subscribePath && isRex(proxyTarget)) {
+    subscribePath = __ROOT__;
+  }
   console.log('subscribePath', subscribePath);
 
   if (subscribePath) {
     const pathListeners = subscribePlugin.listenersMap.get(subscribePath) || new Set<DispatchFn>();
-    console.log('pathListeners', pathListeners);
 
     pathListeners.add(callback);
     subscribePlugin.listenersMap.set(subscribePath, pathListeners);
