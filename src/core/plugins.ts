@@ -2,6 +2,8 @@ import type Core from '.';
 
 type PrimitiveType = string | number | boolean;
 
+type FunctionType = (...args: any[]) => any;
+
 type TargetObj = Record<string, any>;
 
 type Context = { value: any };
@@ -97,6 +99,6 @@ const execute = (handlers: Handler[], ...args: any[]) => {
 //   return middlewares.filter(fn => fn !== middleware) as HandlerFunction<T, K>;
 // }
 
-export type { PrimitiveType, TargetObj, Context, Handler, GetHandler, SetHandler, OwnKeysHandler, DeleteHandler, ApplyHandler, InitHandler, IPlugin, Handlers, Proxied, DispatchFn };
+export type { PrimitiveType, FunctionType, TargetObj, Context, Handler, GetHandler, SetHandler, OwnKeysHandler, DeleteHandler, ApplyHandler, InitHandler, IPlugin, Handlers, Proxied, DispatchFn };
 
 export { getBaseHandler, execute };

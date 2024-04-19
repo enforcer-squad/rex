@@ -97,6 +97,10 @@ const state = createModel({
   updateItem(index: number, value: number) {
     state.arr[index] = value;
   },
+  mixFn() {
+    state.setName('mixFn');
+    state.increaseAge();
+  },
 });
 devtools(state, { name: 'app' });
 const App = () => {
@@ -109,6 +113,7 @@ const App = () => {
     increaseAge,
     setIndex,
     updateItem,
+    mixFn,
   } = useModel(state);
   // const [index, setIndex] = useReactive(0);
   // const [state, setState] = useReactive({
@@ -193,6 +198,12 @@ const App = () => {
           updateItem(0, Math.random());
         }}>
         update arr 0
+      </Button>
+      <Button
+        onClick={() => {
+          mixFn();
+        }}>
+        mixFn
       </Button>
       {/* <div>{state?.person?.name}</div> */}
       {/* <div>{state?.person?.age}</div> */}

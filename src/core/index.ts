@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
-import { isArrayTraverse, isFunction, isFunctionProp, isObject, isSymbol } from '@/utils/tools';
-import type { IPlugin, Handlers, Proxied, TargetObj } from './plugins';
+import { isArrayTraverse, isFunctionProp, isObject, isSymbol } from '@/utils/tools';
+import type { IPlugin, Handlers, Proxied, TargetObj, FunctionType } from './plugins';
 import { getBaseHandler, execute } from './plugins';
 
 class Core<T extends TargetObj> {
@@ -80,6 +80,8 @@ class Core<T extends TargetObj> {
           return this;
         } else if (prop === '__isRex') {
           return Reflect.get(target, prop, receiver);
+        } else if (initObj !== target && isFunctionProp(target, prop)) {
+          return Reflect.get(target, prop, receiver);
         }
         const value = Reflect.get(target, prop, receiver);
         if (isObject(value)) {
@@ -121,8 +123,8 @@ class Core<T extends TargetObj> {
   }
 
   // TODO: has暂未实现，看需求
-  createGetter(initObj: T, getterId?: string): Proxied<T> {
-    if (!isObject(initObj) && !isFunction(initObj)) {
+  createGetter(initObj: T, getterId?: string, isRoot = true): Proxied<T> {
+    if (!isObject(initObj)) {
       throw new Error('init object must be Object');
     }
 
@@ -148,16 +150,18 @@ class Core<T extends TargetObj> {
           execute(handlers.ownKeys, target);
           return Reflect.get(target, prop, receiver);
         } else if (isFunctionProp(target, prop)) {
-          console.log('getF', initObj, target);
-
-          // return Reflect.get(target, prop, receiver);
+          const fn = Reflect.get(target, prop, receiver);
+          if (isRoot) {
+            return this.createFunctionProxy(fn, initObj);
+          }
+          return fn;
         }
 
         const { value } = execute(handlers.get, target, prop, receiver);
 
-        if (isObject(value) || isFunction(value)) {
+        if (isObject(value)) {
           const tmpObj = value as T;
-          return this.createGetter(tmpObj, getterId);
+          return this.createGetter(tmpObj, getterId, false);
         }
         return value;
       },
@@ -171,12 +175,9 @@ class Core<T extends TargetObj> {
       deleteProperty: (target, prop) => {
         throw new Error(`attempt to delete property ${String(prop)}. This object is read-only.`);
       },
-      apply: (target, thisArg, argArray) => {
-        const { value } = execute(handlers.apply, target, thisArg, argArray);
-        return value;
-      },
     };
     const proxyObject = new Proxy(initObj, handler) as Proxied<T>;
+
     if (getterId === undefined) {
       getterId = v4();
     }
@@ -188,6 +189,18 @@ class Core<T extends TargetObj> {
     getterIdMap.set(proxyObject, getterId);
 
     return proxyObject;
+  }
+
+  createFunctionProxy(fn: FunctionType, initObj: T): FunctionType {
+    const { handlers } = this;
+
+    const handler: ProxyHandler<FunctionType> = {
+      apply: (target, thisArg, args) => {
+        const { value } = execute(handlers.apply, target, thisArg, args, initObj);
+        return value;
+      },
+    };
+    return new Proxy(fn, handler);
   }
 }
 

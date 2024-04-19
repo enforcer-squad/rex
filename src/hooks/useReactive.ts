@@ -133,7 +133,7 @@ const reactiveMemo = <P extends TargetObj>(Component: FunctionComponent<P>) => {
     recycleDispatchBatch(props, safeUpdate);
 
     const _props = useMemo(() => {
-      console.log('重新计算props');
+      // console.log('重新计算props');
 
       return Object.keys(props).reduce<any>((ret, key) => {
         if (isRex(props[key])) {

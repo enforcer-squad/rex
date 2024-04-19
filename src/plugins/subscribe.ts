@@ -58,7 +58,7 @@ class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
   set: IPlugin<T>['set'] = (context, next, target, prop, newValue, receiver) => {
     next(context, next, target, prop, newValue, receiver);
     const currentPath = this.getPath(target, prop);
-    console.log('currentPath', currentPath, 'set', target, prop);
+    // console.log('currentPath', currentPath, 'set', target, prop);
 
     if (currentPath) {
       const matchingKeys = Array.from(this.listenersMap.keys()).filter(key => key === __ROOT__ || this.isMatch(key, currentPath));
@@ -79,7 +79,7 @@ const subscribe = <T extends TargetObj>(proxyTarget: Proxied<T>, callback: (...a
   if (!subscribePath && isRex(proxyTarget)) {
     subscribePath = __ROOT__;
   }
-  console.log('subscribePath', subscribePath);
+  // console.log('subscribePath', subscribePath);
 
   if (subscribePath) {
     const pathListeners = subscribePlugin.listenersMap.get(subscribePath) || new Set<DispatchFn>();

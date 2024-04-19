@@ -21,9 +21,15 @@ class DevToolPlugin<T extends TargetObj> implements IPlugin<T> {
     this.core = core;
   }
 
-  apply: IPlugin<T>['apply'] = (context, next, target, thisArg, argArray, rootProxyRef) => {
-    next(context, next, target, thisArg, argArray, rootProxyRef);
-    console.log('asdasda', thisArg, argArray, rootProxyRef);
+  apply: IPlugin<T>['apply'] = (context, next, target, thisArg, argArray, state) => {
+    next(context, next, target, thisArg, argArray, state);
+    const { interceptor } = this.options;
+
+    if (interceptor) {
+      state = interceptor(state);
+    }
+
+    this.devTools.send(`${target.name.replace('bound ', '')}`, state);
   };
 }
 
