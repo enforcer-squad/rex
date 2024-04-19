@@ -80,7 +80,7 @@ class Core<T extends TargetObj> {
           return this;
         } else if (prop === '__isRex') {
           return Reflect.get(target, prop, receiver);
-        } else if (initObj !== target && isFunctionProp(target, prop)) {
+        } else if (isFunctionProp(target, prop)) {
           return Reflect.get(target, prop, receiver);
         }
         const value = Reflect.get(target, prop, receiver);

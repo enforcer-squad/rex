@@ -101,6 +101,14 @@ const state = createModel({
     state.setName('mixFn');
     state.increaseAge();
   },
+  async getData() {
+    const name: string = await new Promise(resolve => {
+      setTimeout(() => {
+        resolve('async getData');
+      }, 1000);
+    });
+    state.setName(name);
+  },
 });
 devtools(state, { name: 'app' });
 const App = () => {
@@ -114,6 +122,7 @@ const App = () => {
     setIndex,
     updateItem,
     mixFn,
+    getData,
   } = useModel(state);
   // const [index, setIndex] = useReactive(0);
   // const [state, setState] = useReactive({
@@ -204,6 +213,12 @@ const App = () => {
           mixFn();
         }}>
         mixFn
+      </Button>
+      <Button
+        onClick={() => {
+          getData();
+        }}>
+        async getData
       </Button>
       {/* <div>{state?.person?.name}</div> */}
       {/* <div>{state?.person?.age}</div> */}

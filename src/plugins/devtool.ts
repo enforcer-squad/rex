@@ -28,8 +28,17 @@ class DevToolPlugin<T extends TargetObj> implements IPlugin<T> {
     if (interceptor) {
       state = interceptor(state);
     }
-
-    this.devTools.send(`${target.name.replace('bound ', '')}`, state);
+    if (context?.value?.constructor?.name === 'Promise') {
+      context.value
+        .then(() => {
+          this.devTools.send(`${target.name.replace('bound ', '')}`, state);
+        })
+        .catch(() => {
+          console.log('async error');
+        });
+    } else {
+      this.devTools.send(`${target.name.replace('bound ', '')}`, state);
+    }
   };
 }
 
