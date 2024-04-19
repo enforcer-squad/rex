@@ -32,7 +32,7 @@ class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
     return true;
   };
 
-  private readonly getPath: GetPath<T> = (target, prop) => {
+  public readonly getPath: GetPath<T> = (target, prop) => {
     const parentPath = this.pathsMap.get(target);
     let path = '';
     if (parentPath) {
@@ -42,9 +42,6 @@ class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
       path += parentPath ? `.${prop as string}` : `${prop as string}`;
     }
     return path;
-
-    // const currentPath = parentPath ? `${parentPath}.${prop as string}` : prop;
-    // return currentPath as string;
   };
 
   get: IPlugin<T>['get'] = (context, next, target, prop, receiver) => {
@@ -76,7 +73,7 @@ class SubscribePlugin<T extends TargetObj> implements IPlugin<T> {
 
 const subscribe = <T extends TargetObj>(proxyTarget: Proxied<T>, callback: (...args: any[]) => void, lazy: boolean = true) => {
   const core = getCoreInstance(proxyTarget);
-  const subscribePlugin = core.getPlugin(SubscribePlugin);
+  const subscribePlugin = core.getPlugin(SubscribePlugin)!;
   const target = toRaw(proxyTarget);
   let subscribePath = subscribePlugin.getPath(target);
   if (!subscribePath && isRex(proxyTarget)) {

@@ -19,6 +19,15 @@ interface PropTypes {
 interface PropTypes1 {
   person: { name: string; age: number };
 }
+interface PropTypes2 {
+  name?: string;
+  age?: number;
+}
+interface PropTypes3 {
+  arr?: number[];
+  index?: number;
+  value?: number;
+}
 
 const Test1: FC<PropTypes> = reactiveMemo(({ arr, index }) => {
   console.log('render Test1', arr[index]);
@@ -49,23 +58,55 @@ const Test2: FC<PropTypes1> = reactiveMemo(({ person }) => {
     </div>
   );
 });
+
+const Test3: FC<PropTypes2> = reactiveMemo(({ name }) => {
+  console.log('render Test3');
+  // return <div>I am test1 {person?.name}</div>;
+  return <div>I am test3,{name}</div>;
+});
+
+const Test4: FC<PropTypes2> = reactiveMemo(({ age }) => {
+  console.log('render Test4');
+  // return <div>I am test1 {person?.name}</div>;
+  return <div>I am test4,{age}</div>;
+});
+
+const Test5: FC<PropTypes3> = reactiveMemo(({ value }) => {
+  console.log('render Test5');
+  // return <div>I am test1 {person?.name}</div>;
+  return <div>I am test5,{value}</div>;
+});
+
 const state = createModel({
   person: {
     name: 'xxx',
     age: 10,
   },
+  arr: [1, 2, 3],
+  index: 0,
   setName(name: string) {
     state.person.name = name;
   },
   increaseAge() {
     state.person.age++;
   },
+  setIndex(index: number) {
+    state.index = index;
+  },
+  updateItem(index: number, value: number) {
+    state.arr[index] = value;
+  },
 });
 const App = () => {
   console.log('render App');
   const {
     person: { name, age },
+    arr,
+    index,
     setName,
+    increaseAge,
+    setIndex,
+    updateItem,
   } = useModel(state);
   // const [index, setIndex] = useReactive(0);
   // const [state, setState] = useReactive({
@@ -122,12 +163,34 @@ const App = () => {
   // console.log('render App', person, window.pathsMap.get(toRaw(state)));
   return (
     <div style={{ padding: '10px' }}>
-      <div>{name}</div>
+      {/* <div>{name}</div> */}
+      <Test3 name={name} />
+      <Test4 age={age} />
+      {/* <Test5 arr={arr} index={index} /> */}
+      <Test5 value={arr[index]} />
       <Button
         onClick={() => {
           setName('qqq');
         }}>
         setName
+      </Button>
+      <Button
+        onClick={() => {
+          increaseAge();
+        }}>
+        increaseAge
+      </Button>
+      <Button
+        onClick={() => {
+          setIndex(1);
+        }}>
+        setIndex 1
+      </Button>
+      <Button
+        onClick={() => {
+          updateItem(0, Math.random());
+        }}>
+        update arr 0
       </Button>
       {/* <div>{state?.person?.name}</div> */}
       {/* <div>{state?.person?.age}</div> */}
