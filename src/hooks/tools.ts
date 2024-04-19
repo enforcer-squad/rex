@@ -1,6 +1,7 @@
 import type { Proxied, TargetObj } from '@/core/plugins';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useWatch } from './useWatch';
+import type { EffectFn } from './useWatch';
 
 const useRefFn = (initState: any) => {
   const [init] = useState(initState);
@@ -16,4 +17,13 @@ const useRefSync = <T extends TargetObj>(initState: Proxied<T>) => {
   return ref;
 };
 
-export { useRefFn, useRefSync };
+const useUnMount = (callback: EffectFn) => {
+  useEffect(
+    () => () => {
+      callback();
+    },
+    [],
+  );
+};
+
+export { useRefFn, useRefSync, useUnMount };

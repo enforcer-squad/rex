@@ -8,6 +8,7 @@ import { useComputed } from '@/hooks/useComputed';
 import { useWatch } from '@/hooks/useWatch';
 import { toRaw } from '@/core';
 import { subscribe } from '@/plugins/subscribe';
+import { createModel, useModel } from '@/hooks/useModel';
 
 interface PropTypes {
   // person: { name: string; age: number };
@@ -48,33 +49,47 @@ const Test2: FC<PropTypes1> = reactiveMemo(({ person }) => {
     </div>
   );
 });
-
+const state = createModel({
+  person: {
+    name: 'xxx',
+    age: 10,
+  },
+  setName(name: string) {
+    state.person.name = name;
+  },
+  increaseAge() {
+    state.person.age++;
+  },
+});
 const App = () => {
   console.log('render App');
-
-  const [index, setIndex] = useReactive(0);
-  const [state, setState] = useReactive({
-    person: { name: 'xxx', age: 10 },
-    nested: {
-      person: {
-        name: 'xxx',
-        age: 10,
-      },
-    },
-    test: {
-      a: {
-        b: 1,
-      },
-    },
-    arr: [3, 2, 1],
-    count: 0,
-  });
-
   const {
-    nested: { person: nestedPerson },
-    person,
-    arr,
-  } = state;
+    person: { name, age },
+    setName,
+  } = useModel(state);
+  // const [index, setIndex] = useReactive(0);
+  // const [state, setState] = useReactive({
+  //   person: { name: 'xxx', age: 10 },
+  //   nested: {
+  //     person: {
+  //       name: 'xxx',
+  //       age: 10,
+  //     },
+  //   },
+  //   test: {
+  //     a: {
+  //       b: 1,
+  //     },
+  //   },
+  //   arr: [3, 2, 1],
+  //   count: 0,
+  // });
+
+  // const {
+  //   nested: { person: nestedPerson },
+  //   person,
+  //   arr,
+  // } = state;
   // useEffect(() => {
   //   subscribe(state, () => {
   //     console.log('state changed');
@@ -107,13 +122,20 @@ const App = () => {
   // console.log('render App', person, window.pathsMap.get(toRaw(state)));
   return (
     <div style={{ padding: '10px' }}>
+      <div>{name}</div>
+      <Button
+        onClick={() => {
+          setName('qqq');
+        }}>
+        setName
+      </Button>
       {/* <div>{state?.person?.name}</div> */}
       {/* <div>{state?.person?.age}</div> */}
       {/* <div>{state?.count}</div> */}
       {/* <div>{state?.value}</div> */}
-      <Test1 arr={arr} index={index.value} />
+      {/* <Test1 arr={arr} index={index.value} /> */}
       {/* <Test2 person={nestedPerson} /> */}
-      <Button
+      {/* <Button
         onClick={() => {
           setIndex(0);
         }}>
@@ -193,7 +215,7 @@ const App = () => {
           // setState(draft => draft.count++);
         }}>
         Change Age
-      </Button>
+      </Button> */}
       {/* <div>{state.arr[index]}</div>
       <Button
         onClick={() => {

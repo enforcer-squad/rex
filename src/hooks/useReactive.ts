@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable prefer-const */
+import type { FunctionComponent } from 'react';
+import type { PrimitiveType, DispatchFn, Proxied, TargetObj } from '@/core/plugins';
 import Core, { getCoreInstance, isRex, toRaw } from '@/core';
-import { type PrimitiveType, type DispatchFn, type Proxied, type TargetObj } from '@/core/plugins';
 import { ReactivePlugin } from '@/plugins/reactive';
 import { SubscribePlugin } from '@/plugins/subscribe';
-import { isFunction, isPrimitive, isPrimitiveValue } from '@/utils/tools';
-import { type FunctionComponent, memo, useCallback, useLayoutEffect, useMemo, useReducer, useRef, useEffect } from 'react';
+import { isFunction, isPrimitive } from '@/utils/tools';
+import { memo, useCallback, useLayoutEffect, useMemo, useReducer, useRef, useEffect } from 'react';
+import { useUnMount } from './tools';
 
 type SetterRef<T extends TargetObj> = { current: Proxied<T> };
 type GetterRef<T extends TargetObj> = { current: Proxied<T> };
@@ -116,12 +116,10 @@ const useReactive = <T extends TargetObj>(initObj: InitObj<T> = undefined): [Pro
     return [getterRef, setState];
   }, []);
 
-  useEffect(() => {
-    return () => {
-      // 不需要添加其他的了 weakmap加react函数释放
-      recycleDispatch(coreRef.current, safeUpdate);
-    };
-  }, []);
+  useUnMount(() => {
+    // 不需要添加其他的了 weakmap加react函数释放
+    recycleDispatch(coreRef.current, safeUpdate);
+  });
 
   return [getter?.current, setter];
 };
@@ -144,7 +142,7 @@ const reactiveMemo = <P extends TargetObj>(Component: FunctionComponent<P>) => {
           const target = toRaw(proxyTarget);
           const getter = core.createGetter(target);
           const getterId = core.getterIdMap.get(getter)!;
-          const reactivePlugin = core.getPlugin(ReactivePlugin);
+          const reactivePlugin = core.getPlugin(ReactivePlugin)!;
           reactivePlugin.updateDispatcher(getterId, safeUpdate);
           ret[key] = getter;
         } else {
@@ -163,5 +161,5 @@ const reactiveMemo = <P extends TargetObj>(Component: FunctionComponent<P>) => {
     return Component(_props);
   });
 };
-
-export { useSafeUpdate, useReactive, reactiveMemo };
+export type { SetterRef };
+export { useSafeUpdate, useReactive, reactiveMemo, recycleDispatch };

@@ -74,6 +74,13 @@ class Core<T extends TargetObj> {
 
     const handler: ProxyHandler<T> = {
       get: (target, prop, receiver) => {
+        if (prop === '__origin') {
+          return target;
+        } else if (prop === '__core') {
+          return this;
+        } else if (prop === '__isRex') {
+          return Reflect.get(target, prop, receiver);
+        }
         const value = Reflect.get(target, prop, receiver);
         if (isObject(value)) {
           const tmpObj = value as T;
@@ -186,11 +193,11 @@ const isRex = (target: any) => {
 };
 
 const toRaw = <T extends TargetObj>(target: Proxied<T>) => {
-  return target.__origin;
+  return target.__origin as T;
 };
 
 const getCoreInstance = <T extends TargetObj>(target: Proxied<T>) => {
-  return target.__core;
+  return target.__core as Core<T>;
 };
 
 export { isRex, toRaw, getCoreInstance };

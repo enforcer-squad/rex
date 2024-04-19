@@ -7,7 +7,7 @@ type TargetObj = Record<string, any>;
 type Context = { value: any };
 
 type Proxied<T> = {
-  [P in keyof T]: T[P] extends object ? Proxied<T[P]> : T[P];
+  [P in keyof T]: T[P] extends object ? (T[P] extends (...args: any[]) => any ? T[P] : Proxied<T[P]>) : T[P];
 };
 
 type DispatchFn = (...args: any[]) => void;

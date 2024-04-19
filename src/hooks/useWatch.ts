@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { TargetObj, Proxied, PrimitiveType } from '@/core/plugins';
 import { subscribe } from '@/plugins/subscribe';
 import { useEffect, useRef } from 'react';
