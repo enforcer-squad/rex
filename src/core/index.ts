@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { isArrayTraverse, isFunctionProp, isObject, isSymbol } from '@/utils/tools';
+import { isArrayTraverse, isFunction, isFunctionProp, isObject, isSymbol } from '@/utils/tools';
 import type { IPlugin, Handlers, Proxied, TargetObj } from './plugins';
 import { getBaseHandler, execute } from './plugins';
 
@@ -107,10 +107,6 @@ class Core<T extends TargetObj> {
         const { value } = execute(handlers.delete, target, prop);
         return value;
       },
-      apply: (target, thisArg, argArray) => {
-        const { value } = execute(handlers.apply, target, thisArg, argArray, rootProxyRef);
-        return value;
-      },
     };
     const { value: proxyObject } = execute(handlers.init, initObj, handler);
 
@@ -126,7 +122,7 @@ class Core<T extends TargetObj> {
 
   // TODO: has暂未实现，看需求
   createGetter(initObj: T, getterId?: string): Proxied<T> {
-    if (!isObject(initObj)) {
+    if (!isObject(initObj) && !isFunction(initObj)) {
       throw new Error('init object must be Object');
     }
 
@@ -152,11 +148,14 @@ class Core<T extends TargetObj> {
           execute(handlers.ownKeys, target);
           return Reflect.get(target, prop, receiver);
         } else if (isFunctionProp(target, prop)) {
-          return Reflect.get(target, prop, receiver);
+          console.log('getF', initObj, target);
+
+          // return Reflect.get(target, prop, receiver);
         }
 
         const { value } = execute(handlers.get, target, prop, receiver);
-        if (isObject(value)) {
+
+        if (isObject(value) || isFunction(value)) {
           const tmpObj = value as T;
           return this.createGetter(tmpObj, getterId);
         }
@@ -171,6 +170,10 @@ class Core<T extends TargetObj> {
       },
       deleteProperty: (target, prop) => {
         throw new Error(`attempt to delete property ${String(prop)}. This object is read-only.`);
+      },
+      apply: (target, thisArg, argArray) => {
+        const { value } = execute(handlers.apply, target, thisArg, argArray);
+        return value;
       },
     };
     const proxyObject = new Proxy(initObj, handler) as Proxied<T>;

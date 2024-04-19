@@ -9,6 +9,7 @@ import { useWatch } from '@/hooks/useWatch';
 import { toRaw } from '@/core';
 import { subscribe } from '@/plugins/subscribe';
 import { createModel, useModel } from '@/hooks/useModel';
+import { devtools } from '@/plugins/devtool';
 
 interface PropTypes {
   // person: { name: string; age: number };
@@ -97,6 +98,7 @@ const state = createModel({
     state.arr[index] = value;
   },
 });
+devtools(state, { name: 'app' });
 const App = () => {
   console.log('render App');
   const {
