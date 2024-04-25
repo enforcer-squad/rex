@@ -1,4 +1,4 @@
-import type Core from '@/core';
+import type { Core } from '@/core';
 import { getCoreInstance, toRaw } from '@/core';
 import { type Proxied, type IPlugin, type TargetObj } from '@/core/plugins';
 

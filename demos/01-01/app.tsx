@@ -3,13 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { memo, type FC, useState, useEffect } from 'react';
 import { Button, Space } from 'antd';
-import { reactiveMemo, useReactive } from '@/hooks/useReactive';
-import { useComputed } from '@/hooks/useComputed';
-import { useWatch } from '@/hooks/useWatch';
-import { toRaw } from '@/core';
-import { subscribe } from '@/plugins/subscribe';
-import { createModel, useModel } from '@/hooks/useModel';
-import { devtools } from '@/plugins/devtool';
+import { createModel, useModel, devtools, reactiveMemo, useReactive, useComputed, useWatch, toRaw, subscribe } from '@/index';
 
 interface PropTypes {
   // person: { name: string; age: number };
@@ -113,6 +107,10 @@ const state = createModel({
 devtools(state, { name: 'app' });
 const App = () => {
   console.log('render App');
+  const [count, setCount] = useState('1');
+  const aaa = () => {
+    setCount('2');
+  };
   const {
     person: { name, age },
     arr,
@@ -179,6 +177,7 @@ const App = () => {
   // console.log('render App', person, window.pathsMap.get(toRaw(state)));
   return (
     <div style={{ padding: '10px' }}>
+      <div onClick={aaa}>rrrrr{count}</div>
       {/* <div>{name}</div> */}
       <Test3 name={name} />
       <Test4 age={age} />

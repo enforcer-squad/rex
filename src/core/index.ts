@@ -216,6 +216,4 @@ const getCoreInstance = <T extends TargetObj>(target: Proxied<T>) => {
   return target.__core as Core<T>;
 };
 
-export { isRex, toRaw, getCoreInstance };
-
-export default Core;
+export { Core, isRex, toRaw, getCoreInstance };

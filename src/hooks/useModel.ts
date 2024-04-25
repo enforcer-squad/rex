@@ -1,4 +1,4 @@
-import Core, { getCoreInstance, toRaw } from '@/core';
+import { Core, getCoreInstance, toRaw } from '@/core';
 import type { Proxied, TargetObj } from '@/core/plugins';
 import { useSafeUpdate, type SetterRef, recycleDispatch } from './useReactive';
 import { ReactivePlugin } from '@/plugins/reactive';

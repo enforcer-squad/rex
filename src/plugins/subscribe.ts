@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type Core from '@/core';
+import type { Core } from '@/core';
 import { getCoreInstance, isRex, toRaw } from '@/core';
 import type { TargetObj, IPlugin, Proxied, DispatchFn } from '@/core/plugins';
 import { isObject } from '@/utils/tools';

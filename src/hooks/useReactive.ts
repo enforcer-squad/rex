@@ -1,6 +1,6 @@
 import type { FunctionComponent } from 'react';
 import type { PrimitiveType, DispatchFn, Proxied, TargetObj } from '@/core/plugins';
-import Core, { getCoreInstance, isRex, toRaw } from '@/core';
+import { Core, getCoreInstance, isRex, toRaw } from '@/core';
 import { ReactivePlugin } from '@/plugins/reactive';
 import { SubscribePlugin } from '@/plugins/subscribe';
 import { isFunction, isPrimitive } from '@/utils/tools';

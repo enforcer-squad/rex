@@ -1,4 +1,4 @@
-import type Core from '@/core';
+import type { Core } from '@/core';
 import type { TargetObj, IPlugin, DispatchFn, Proxied } from '@/core/plugins';
 
 const ITERATION_KEY = Symbol('iteration key');

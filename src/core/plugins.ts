@@ -1,4 +1,4 @@
-import type Core from '.';
+import type { Core } from '.';
 
 type PrimitiveType = string | number | boolean;
 
