@@ -1,7 +1,7 @@
 {
-  "name": "tpl-lib-ts",
-  "version": "1.0.0",
-  "description": "library typescript template",
+  "name": "@enforcer-squad/rex",
+  "version": "0.1.1",
+  "description": "a simple react state solution",
   "main": "dist/index.js",
   "files": [
     "dist"
@@ -121,5 +121,8 @@
     "webpack-dev-server": "^4.15.1",
     "webpack-merge": "^5.10.0",
     "webpack-node-externals": "^3.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
   }
 }
