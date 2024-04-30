@@ -14,6 +14,11 @@ const prodConfig = {
         terserOptions: {
           parse: {},
           compress: {},
+          // mangle: true, // 是否修改变量名
+          // output: {
+          //   comments: false, // 去除注释
+          //   beautify: false, // 最小化
+          // },
           safari10: true,
         },
         parallel: true,
