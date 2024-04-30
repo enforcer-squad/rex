@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { memo, type FC, useState, useEffect } from 'react';
 import { Button, Space } from 'antd';
-import { createModel, useModel, devtools, reactiveMemo, useReactive, useComputed, useWatch, toRaw, subscribe } from '@/index';
+import { createModel, useModel, devtools, reactiveMemo, useReactive, useComputed, useWatch, toRaw, subscribe } from '@enforcer-squad/rex';
 
 interface PropTypes {
   // person: { name: string; age: number };

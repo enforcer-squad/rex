@@ -49,7 +49,7 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
   };
 
   get: IPlugin<T>['get'] = (context, next, target, prop, receiver) => {
-    console.log('get trap', target, prop);
+    // console.log('get trap', target, prop);
 
     next(context, next, target, prop, receiver);
 
@@ -61,7 +61,7 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
   };
 
   set: IPlugin<T>['set'] = (context, next, target, prop, newValue, receiver) => {
-    console.log('set trap', target, prop, newValue);
+    // console.log('set trap', target, prop, newValue);
 
     const hasKey = Reflect.has(target, prop);
     const prevValue = target[prop];
@@ -86,7 +86,7 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
   };
 
   ownKeys: IPlugin<T>['ownKeys'] = (context, next, target, receiver) => {
-    console.log('ownKeys trap', target);
+    // console.log('ownKeys trap', target);
 
     next(context, next, target, receiver);
 
@@ -97,7 +97,7 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
   };
 
   delete: IPlugin<T>['delete'] = (context, next, target, prop) => {
-    console.log('delete trap', target, prop);
+    // console.log('delete trap', target, prop);
 
     next(context, next, target, prop);
 

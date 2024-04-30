@@ -56,6 +56,9 @@ devDependencies:
   '@commitlint/config-conventional':
     specifier: ^18.4.3
     version: 18.4.3
+  '@enforcer-squad/rex':
+    specifier: ^0.1.1
+    version: 0.1.1(react@18.2.0)
   '@pmmmwh/react-refresh-webpack-plugin':
     specifier: ^0.5.11
     version: 0.5.11(react-refresh@0.14.0)(webpack-dev-server@4.15.1)(webpack@5.89.0)
@@ -2707,6 +2710,15 @@ packages:
   /@discoveryjs/json-ext@0.5.7:
     resolution: {integrity: sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==}
     engines: {node: '>=10.0.0'}
+    dev: true
+
+  /@enforcer-squad/rex@0.1.1(react@18.2.0):
+    resolution: {integrity: sha512-fhwMd0L0nPfl53PqyxU5N/n+0fcKceVNIIO66UCpV4nH+K4BoFVrySPMNYcyoAhfM2FEId1YeARbO7cuvN+4RQ==, tarball: https://registry.npmjs.org/@enforcer-squad/rex/-/rex-0.1.1.tgz}
+    requiresBuild: true
+    peerDependencies:
+      react: ^18.0.0
+    dependencies:
+      react: 18.2.0
     dev: true
 
   /@esbuild/android-arm64@0.17.19:

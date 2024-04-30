@@ -34,7 +34,7 @@ class DevToolPlugin<T extends TargetObj> implements IPlugin<T> {
           this.devTools.send(`${target.name.replace('bound ', '')}`, state);
         })
         .catch(() => {
-          console.log('async error');
+          console.log('async devtools error');
         });
     } else {
       this.devTools.send(`${target.name.replace('bound ', '')}`, state);
