@@ -1,5 +1,10 @@
 # @enforcer-squad/rex
 
+[![GitHub license](https://img.shields.io/github/license/enforcer-squad/rex?style=flat-square)](https://github.com/enforcer-squad/rex/blob/main/LICENSE)
+[![npm type definitions](https://img.shields.io/npm/types/typescript?color=orange&style=flat-square)](https://github.com/enforcer-squad/rex/blob/main/src/index.ts)
+[![npm bundle size](https://img.shields.io/bundlephobia/minzip/@enforcer-squad/rex?color=brightgreen&style=flat-square)](https://bundlephobia.com/result?p=@enforcer-squad/rex)
+[![react](https://img.shields.io/badge/React-%3E%3D18.0.0-green.svg?style=flat-square)](https://img.shields.io/badge/React-%3E=18.0.0-green.svg?style=flat-square)
+
 a simple react state solution
 
 一个简单易用几乎没有学习成本的react状态解决方案。基于proxy，解决react无效rerender问题，让你毫无心智负担的搞定react状态管理。支持ts类型提示，良好的编程体验即刻开启！
