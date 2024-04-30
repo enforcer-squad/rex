@@ -32,7 +32,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '16'
-          cache: pnpm
       # 安装依赖 & 运行测试生成测试覆盖率报告
       - name: Install and test & coverage
         run: |
