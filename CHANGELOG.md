@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5](https://github.com/enforcer-squad/rex/compare/v0.1.4...v0.1.5) (2024-04-30)
+
+
+### Bug Fixes
+
+* 修复ownkeys receiver问题 ([b5e128c](https://github.com/enforcer-squad/rex/commit/b5e128cdf0b2f6aed95ed5a8faf37f846a5c85cb))
+
 ### [0.1.4](https://github.com/enforcer-squad/rex/compare/v0.1.3...v0.1.4) (2024-04-30)
 
 ### [0.1.3](https://github.com/enforcer-squad/rex/compare/v0.1.2...v0.1.3) (2024-04-30)

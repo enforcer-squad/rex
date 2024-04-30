@@ -1,6 +1,6 @@
 {
   "name": "@enforcer-squad/rex",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "a simple react state solution",
   "main": "dist/index.js",
   "files": [
