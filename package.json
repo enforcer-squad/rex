@@ -23,10 +23,15 @@
     "test": "jest"
   },
   "keywords": [
-    "library",
-    "typescript",
-    "template"
+    "react",
+    "easy",
+    "state",
+    "proxy"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/enforcer-squad/rex.git"
+  },
   "author": "enforcer.a06@gmail.com",
   "license": "MIT",
   "lint-staged": {

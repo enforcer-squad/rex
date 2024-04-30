@@ -2,7 +2,7 @@
 
 a simple react state solution
 
-一个简单易用几乎没有学习成本的react状态解决方案。基于proxy，解决react无效rerender问题，让你毫无心智负担的搞定react状态管理问题。支持ts类型提示，良好的变成体验即刻启程！
+一个简单易用几乎没有学习成本的react状态解决方案。基于proxy，解决react无效rerender问题，让你毫无心智负担的搞定react状态管理。支持ts类型提示，良好的编程体验即刻开启！
 
 ## createModel
 
