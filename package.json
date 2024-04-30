@@ -22,6 +22,9 @@
     "release:only": "npm publish --registry=https://registry.npmjs.com/",
     "test": "jest"
   },
+  "engines": {
+    "node": ">=16"
+  },
   "keywords": [
     "react",
     "easy",
