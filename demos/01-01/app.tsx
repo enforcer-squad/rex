@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { memo, type FC, useState, useEffect } from 'react';
 import { Button, Space } from 'antd';
-import { createModel, useModel, devtools, reactiveMemo, useReactive, useComputed, useWatch, toRaw, subscribe } from '@enforcer-squad/rex';
+import { createModel, useModel, devtools, reactiveMemo, useReactive, useComputed, useWatch, toRaw, subscribe } from '@/index';
 
 interface PropTypes {
   // person: { name: string; age: number };
@@ -467,4 +467,35 @@ const App = () => {
   );
 };
 
-export default App;
+const App1 = () => {
+  const [state, setState] = useReactive({
+    person: { name: 'xxx', age: 10 },
+    count: 0,
+  });
+
+  return (
+    <div>
+      <div data-testid="value">
+        {Object.values(state.person).map((v, index) => {
+          return <p key={index}>{index}</p>;
+        })}
+      </div>
+      <Button
+        data-testid="btn1"
+        onClick={() => {
+          setState(draft => ((draft as any).person.newKey = Math.random()));
+        }}>
+        add key
+      </Button>
+      <Button
+        data-testid="btn2"
+        onClick={() => {
+          setState(draft => delete (draft as any).person.age);
+        }}>
+        delete key
+      </Button>
+    </div>
+  );
+};
+
+export default App1;

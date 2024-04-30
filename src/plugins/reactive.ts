@@ -49,7 +49,7 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
   };
 
   get: IPlugin<T>['get'] = (context, next, target, prop, receiver) => {
-    // console.log('get trap', target, prop);
+    // console.log('get trap', target, prop, receiver);
 
     next(context, next, target, prop, receiver);
 
@@ -86,13 +86,14 @@ class ReactivePlugin<T extends TargetObj> implements IPlugin<T> {
   };
 
   ownKeys: IPlugin<T>['ownKeys'] = (context, next, target, receiver) => {
-    // console.log('ownKeys trap', target);
+    // console.log('ownKeys trap', target, receiver);
 
     next(context, next, target, receiver);
 
     if (!collectionState.enable) {
       return;
     }
+
     this.registerDispatcher(target, ITERATION_KEY as keyof T, receiver);
   };
 

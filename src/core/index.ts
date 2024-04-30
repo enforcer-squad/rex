@@ -147,7 +147,7 @@ class Core<T extends TargetObj> {
         } else if (prop === '__isRex') {
           return Reflect.get(target, prop, receiver);
         } else if (isArrayTraverse(target, prop)) {
-          execute(handlers.ownKeys, target);
+          execute(handlers.ownKeys, target, receiver);
           return Reflect.get(target, prop, receiver);
         } else if (isFunctionProp(target, prop)) {
           const fn = Reflect.get(target, prop, receiver);
@@ -169,7 +169,9 @@ class Core<T extends TargetObj> {
         throw new Error(`attempt to set property ${String(prop)} to ${newValue}. This object is read-only.`);
       },
       ownKeys: target => {
-        const { value } = execute(handlers.ownKeys, target);
+        const cacheMap = getterProxyCache.get(getterId!);
+        const proxyCache = cacheMap?.get(initObj);
+        const { value } = execute(handlers.ownKeys, target, proxyCache);
         return value;
       },
       deleteProperty: (target, prop) => {
