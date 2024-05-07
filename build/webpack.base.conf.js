@@ -6,7 +6,7 @@ const { resolve, isProd } = require('./utils');
 const baseConfig = {
   target: 'web',
   mode: isProd ? 'production' : 'development',
-  devtool: isProd ? 'source-map' : 'source-map',
+  devtool: isProd ? false : 'source-map',
   entry: {
     index: [resolve('src/index.ts')],
   },
