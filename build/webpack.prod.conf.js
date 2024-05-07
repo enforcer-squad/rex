@@ -5,6 +5,7 @@ const ProgressBarPlugin = require('progress-bar-webpack-plugin');
 const nodeExternals = require('webpack-node-externals');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const baseConfig = require('./webpack.base.conf');
+const { codecovWebpackPlugin } = require('@codecov/webpack-plugin');
 
 const prodConfig = {
   optimization: {
@@ -29,6 +30,11 @@ const prodConfig = {
   plugins: [
     new ProgressBarPlugin({
       format: '  build [:bar] ' + chalk.green.bold(':percent') + ' (:elapsed seconds)',
+    }),
+    codecovWebpackPlugin({
+      enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+      bundleName: 'rex-webpack-bundle',
+      uploadToken: process.env.CODECOV_TOKEN,
     }),
     // new BundleAnalyzerPlugin({
     //   analyzerPort: 8899,

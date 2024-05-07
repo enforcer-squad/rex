@@ -2,6 +2,7 @@
 
 [![GitHub license](https://img.shields.io/github/license/enforcer-squad/rex?style=flat-square)](https://github.com/enforcer-squad/rex/blob/main/LICENSE)
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/enforcer-squad/rex/test.yml?branch=main&color=blue&style=flat-square)](https://github.com/enforcer-squad/rex/actions/workflows/test.yml)
+[![Codecov](https://img.shields.io/codecov/c/github/enforcer-squad/rex?style=flat-square)](https://codecov.io/gh/enforcer-squad/rex)
 [![npm type definitions](https://img.shields.io/npm/types/typescript?color=orange&style=flat-square)](https://github.com/enforcer-squad/rex/blob/main/src/index.ts)
 [![npm bundle size](https://img.shields.io/bundlephobia/minzip/@enforcer-squad/rex?color=brightgreen&style=flat-square)](https://bundlephobia.com/result?p=@enforcer-squad/rex)
 [![react](https://img.shields.io/badge/React-%3E%3D18.0.0-green.svg?style=flat-square)](https://img.shields.io/badge/React-%3E=18.0.0-green.svg?style=flat-square)
