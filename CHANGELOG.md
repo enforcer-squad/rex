@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://github.com/enforcer-squad/rex/compare/v0.1.5...v0.2.0) (2024-06-13)
+
+
+### Features
+
+* useuseReactive增加函数初始化 ([3bb446c](https://github.com/enforcer-squad/rex/commit/3bb446c8ac2d1d846e63425128bcac58574fe461))
+
 ### [0.1.5](https://github.com/enforcer-squad/rex/compare/v0.1.4...v0.1.5) (2024-04-30)
 
 
