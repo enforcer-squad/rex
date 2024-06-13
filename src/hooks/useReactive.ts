@@ -10,7 +10,7 @@ import { useUnMount } from './tools';
 type SetterRef<T extends TargetObj> = { current: Proxied<T> };
 type GetterRef<T extends TargetObj> = { current: Proxied<T> };
 type UpdateFn<T extends TargetObj> = (draft: Proxied<T>) => void;
-type InitObj<T extends TargetObj> = T | PrimitiveType | null | undefined;
+type InitObj<T extends TargetObj> = T | PrimitiveType | (() => T) | null | undefined;
 type SetState<T extends TargetObj> = (draft: InitObj<T> | UpdateFn<T>) => void;
 type ReactiveReturn<T extends TargetObj> = [GetterRef<T>, SetState<T>];
 
@@ -72,6 +72,9 @@ const updateAccessor = <T extends TargetObj>(initObj: InitObj<T>, dispatchFn: Di
     return true;
   }
   let target = initObj;
+  if (isFunction(target)) {
+    target = target();
+  }
   if (isPrimitive(target)) {
     if (setterRef.current) {
       (setterRef.current as any).value = target;
@@ -103,12 +106,12 @@ const useReactive = <T extends TargetObj>(initObj: InitObj<T> = undefined): [Pro
   const [getter, setter] = useMemo<ReactiveReturn<T>>(() => {
     const setterRef: SetterRef<T> = {} as any;
     const getterRef: GetterRef<T> = {} as any;
-    const setState = (fn: InitObj<T> | UpdateFn<T>): void => {
-      if (isFunction(fn)) {
-        fn(setterRef.current);
+    const setState = (updateTarget: InitObj<T> | UpdateFn<T>): void => {
+      if (isFunction(updateTarget)) {
+        updateTarget(setterRef.current);
         return;
       }
-      const needUpdate = updateAccessor(fn, safeUpdate, setState, coreRef, setterRef, getterRef);
+      const needUpdate = updateAccessor(updateTarget, safeUpdate, setState, coreRef, setterRef, getterRef);
       needUpdate && safeUpdate();
     };
 

@@ -468,31 +468,43 @@ const App = () => {
 };
 
 const App1 = () => {
-  const [state, setState] = useReactive({
-    person: { name: 'xxx', age: 10 },
-    count: 0,
+  const [person, setPerson] = useReactive(() => {
+    return {
+      name: 'xxx',
+      age: 10,
+    };
   });
+  console.log('person', person);
 
   return (
     <div>
-      <div data-testid="value">
-        {Object.values(state.person).map((v, index) => {
-          return <p key={index}>{index}</p>;
-        })}
-      </div>
+      <div data-testid="value">{person.name}</div>
+      <div data-testid="value">{person.age}</div>
+
       <Button
-        data-testid="btn1"
+        data-testid="btn2"
         onClick={() => {
-          setState(draft => ((draft as any).person.newKey = Math.random()));
+          setPerson(draft => {
+            draft.name = 'yyy';
+          });
         }}>
-        add key
+        Set Name
       </Button>
       <Button
         data-testid="btn2"
         onClick={() => {
-          setState(draft => delete (draft as any).person.age);
+          setPerson(draft => {
+            draft.age++;
+          });
         }}>
-        delete key
+        Set Age
+      </Button>
+      <Button
+        data-testid="btn2"
+        onClick={() => {
+          setPerson({ name: 'xxx', age: 10 });
+        }}>
+        Reset Person
       </Button>
     </div>
   );
