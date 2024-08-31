@@ -51,10 +51,20 @@ class Core<T extends TargetObj> {
   }
 
   private attachTag(initObj: T) {
+    let vary = Math.random();
     if (!('__isRex' in initObj)) {
       Object.defineProperty(initObj, '__isRex', {
         get() {
           return true;
+        },
+        enumerable: false,
+      });
+      Object.defineProperty(initObj, '__rex_vary', {
+        get() {
+          return vary;
+        },
+        set(value) {
+          vary = value;
         },
         enumerable: false,
       });
