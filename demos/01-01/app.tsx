@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-confusing-void-expression */
 /* eslint-disable @typescript-eslint/require-array-sort-compare */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { memo, type FC, useState, useEffect } from 'react';
-import { Button, Space } from 'antd';
+import { memo, type FC, useState, useEffect, useRef } from 'react';
+import { Button, Space, message } from 'antd';
 import { createModel, useModel, devtools, reactiveMemo, useReactive, useComputed, useWatch, toRaw, subscribe } from '@/index';
 
 interface PropTypes {
@@ -474,13 +474,56 @@ const App1 = () => {
       age: 10,
     };
   });
-  console.log('person', person);
+  const [message, setMessage] = useReactive(['hello', 'world']);
+  const [message1, setMessage1] = useState(['hello', 'world']);
+  const divRef = useRef<HTMLDivElement>(null);
+  const divRefOrigin = useRef<HTMLDivElement>(null);
+  const c1 = useComputed(() => {
+    console.log('c1', message.length);
+    return message.length;
+  }, [message]);
+  const c2 = useComputed(() => {
+    console.log('c2', message1.length);
+    return message1.length;
+  }, [message1]);
+  useWatch(() => {
+    console.log('divRef', divRef.current!.clientHeight);
+  }, [message]);
+  useEffect(() => {
+    console.log('divRefOrigin', divRefOrigin.current!.clientHeight);
+  }, [message1]);
+  console.log('render App1');
 
   return (
     <div>
       <div data-testid="value">{person.name}</div>
       <div data-testid="value">{person.age}</div>
-
+      <div ref={divRef}>
+        {message.map((value, index) => {
+          return <div key={index}>{value}</div>;
+        })}
+      </div>
+      <div ref={divRefOrigin}>
+        {message1.map((value, index) => {
+          return <div key={index}>{value}</div>;
+        })}
+      </div>
+      <Button
+        onClick={() => {
+          setMessage(draft => {
+            draft.push('new message');
+          });
+        }}>
+        Add Message
+      </Button>
+      <Button
+        onClick={() => {
+          setMessage1(() => {
+            return [...message1, 'new message'];
+          });
+        }}>
+        Add Message1
+      </Button>
       <Button
         data-testid="btn2"
         onClick={() => {

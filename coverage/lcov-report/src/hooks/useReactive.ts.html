@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">63.2% </span>
+                <span class="strong">62.96% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>67/106</span>
+                <span class='fraction'>68/108</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">48.14% </span>
+                <span class="strong">46.42% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>13/27</span>
+                <span class='fraction'>13/28</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">61.76% </span>
+                <span class="strong">61.53% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>63/102</span>
+                <span class='fraction'>64/104</span>
             </div>
         
             
@@ -228,7 +228,10 @@
 <a name='L163'></a><a href='#L163'>163</a>
 <a name='L164'></a><a href='#L164'>164</a>
 <a name='L165'></a><a href='#L165'>165</a>
-<a name='L166'></a><a href='#L166'>166</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L166'></a><a href='#L166'>166</a>
+<a name='L167'></a><a href='#L167'>167</a>
+<a name='L168'></a><a href='#L168'>168</a>
+<a name='L169'></a><a href='#L169'>169</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
@@ -302,6 +305,9 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -405,7 +411,7 @@ import { useUnMount } from './tools';
 type SetterRef&lt;T extends TargetObj&gt; = { current: Proxied&lt;T&gt; };
 type GetterRef&lt;T extends TargetObj&gt; = { current: Proxied&lt;T&gt; };
 type UpdateFn&lt;T extends TargetObj&gt; = (draft: Proxied&lt;T&gt;) =&gt; void;
-type InitObj&lt;T extends TargetObj&gt; = T | PrimitiveType | null | undefined;
+type InitObj&lt;T extends TargetObj&gt; = T | PrimitiveType | (() =&gt; T) | null | undefined;
 type SetState&lt;T extends TargetObj&gt; = (draft: InitObj&lt;T&gt; | UpdateFn&lt;T&gt;) =&gt; void;
 type ReactiveReturn&lt;T extends TargetObj&gt; = [GetterRef&lt;T&gt;, SetState&lt;T&gt;];
 &nbsp;
@@ -467,6 +473,9 @@ const updateAccessor = &lt;T extends TargetObj&gt;(initObj: InitObj&lt;T&gt;, di
 <span class="cstat-no" title="statement not covered" >    return true;</span>
   }
   let target = initObj;
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (isFunction(target)) {
+<span class="cstat-no" title="statement not covered" >    target = target();</span>
+  }
   <span class="missing-if-branch" title="if path not taken" >I</span>if (isPrimitive(target)) {
 <span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (setterRef.current) {</span>
       (<span class="cstat-no" title="statement not covered" >setterRef.current as any).value = target;</span>
@@ -498,12 +507,12 @@ const useReactive = &lt;T extends TargetObj&gt;(initObj: InitObj&lt;T&gt; = <spa
   const [getter, setter] = useMemo&lt;ReactiveReturn&lt;T&gt;&gt;(() =&gt; {
     const setterRef: SetterRef&lt;T&gt; = {} as any;
     const getterRef: GetterRef&lt;T&gt; = {} as any;
-    const setState = (fn: InitObj&lt;T&gt; | UpdateFn&lt;T&gt;): void =&gt; {
-      if (isFunction(fn)) {
-        fn(setterRef.current);
+    const setState = (updateTarget: InitObj&lt;T&gt; | UpdateFn&lt;T&gt;): void =&gt; {
+      if (isFunction(updateTarget)) {
+        updateTarget(setterRef.current);
         return;
       }
-      const needUpdate = <span class="cstat-no" title="statement not covered" >updateAccessor(fn, safeUpdate, setState, coreRef, setterRef, getterRef);</span>
+      const needUpdate = <span class="cstat-no" title="statement not covered" >updateAccessor(updateTarget, safeUpdate, setState, coreRef, setterRef, getterRef);</span>
 <span class="cstat-no" title="statement not covered" >      needUpdate &amp;&amp; safeUpdate();</span>
     };
 &nbsp;
@@ -565,7 +574,7 @@ export { useSafeUpdate, useReactive, reactiveMemo, recycleDispatch };
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2024-05-07T07:32:31.253Z
+                at 2024-08-31T17:01:39.066Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

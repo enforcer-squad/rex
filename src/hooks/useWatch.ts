@@ -13,14 +13,7 @@ const subDeps = <T extends TargetObj>(callback: EffectFn, unMountRef: React.Muta
   deps.forEach(dep => {
     if (!isPrimitive(dep) && isRex(dep)) {
       const unSub = subscribe(dep, () => {
-        // TODO? 是否将任务放入微任务队列中更好的模拟触发时机
-        if (deps.length === 0) {
-          collectionState.enable = false;
-        }
-        unMountRef.current = callback();
-        if (deps.length === 0) {
-          collectionState.enable = true;
-        }
+        dep.__rex_vary = dep.__rex_vary ? dep.__rex_vary + 1 : 1;
       });
 
       const unSubCB = () => {
@@ -39,12 +32,23 @@ const unSubDeps = (unSubsRef: React.MutableRefObject<Set<EffectFn>>) => {
   }
 };
 
+const getDeps = <T extends TargetObj>(deps: Deps<T>) => {
+  return deps.map(dep => {
+    if (!isPrimitive(dep) && isRex(dep)) {
+      return dep.__rex_vary;
+    }
+    return dep;
+  });
+};
+
 const useWatch = <T extends TargetObj>(callback: EffectFn, deps: Deps<T>) => {
   const unSubsRef = useRef(new Set<EffectFn>());
   const unMountRef = useRef<any>();
 
   useEffect(() => {
-    subDeps(callback, unMountRef, unSubsRef, deps);
+    if (deps.length !== 0) {
+      subDeps(callback, unMountRef, unSubsRef, deps);
+    }
     if (deps.length === 0) {
       collectionState.enable = false;
     }
@@ -56,7 +60,7 @@ const useWatch = <T extends TargetObj>(callback: EffectFn, deps: Deps<T>) => {
       unSubDeps(unSubsRef);
       unMountRef.current?.();
     };
-  }, [...deps]);
+  }, [...getDeps(deps)]);
 };
 
 export type { EffectFn, Deps };

@@ -4,12 +4,12 @@ type PrimitiveType = string | number | boolean;
 
 type FunctionType = (...args: any[]) => any;
 
-type TargetObj = Record<string, any>;
+type TargetObj = Record<string, any> & { __rex_vary?: number | undefined };
 
 type Context = { value: any };
 
 type Proxied<T> = {
-  [P in keyof T]: T[P] extends object ? (T[P] extends (...args: any[]) => any ? T[P] : Proxied<T[P]>) : T[P];
+  [P in keyof T]: P extends '__rex_vary' ? number | undefined : T[P] extends object ? (T[P] extends (...args: any[]) => any ? T[P] : Proxied<T[P]>) : T[P];
 };
 
 type DispatchFn = (...args: any[]) => void;

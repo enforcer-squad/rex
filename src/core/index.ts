@@ -166,6 +166,9 @@ class Core<T extends TargetObj> {
         return value;
       },
       set: (target, prop, newValue, receiver) => {
+        if (prop === '__rex_vary') {
+          return Reflect.set(target, prop, newValue, receiver);
+        }
         throw new Error(`attempt to set property ${String(prop)} to ${newValue}. This object is read-only.`);
       },
       ownKeys: target => {

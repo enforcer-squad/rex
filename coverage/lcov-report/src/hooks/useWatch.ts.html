@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">25.71% </span>
+                <span class="strong">27.02% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>9/35</span>
+                <span class='fraction'>10/37</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/11</span>
+                <span class='fraction'>0/15</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>0/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">25.71% </span>
+                <span class="strong">27.02% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>9/35</span>
+                <span class='fraction'>10/37</span>
             </div>
         
             
@@ -127,7 +127,12 @@
 <a name='L62'></a><a href='#L62'>62</a>
 <a name='L63'></a><a href='#L63'>63</a>
 <a name='L64'></a><a href='#L64'>64</a>
-<a name='L65'></a><a href='#L65'>65</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
@@ -144,12 +149,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -171,9 +170,20 @@
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -207,13 +217,7 @@ const subDeps = <span class="fstat-no" title="function not covered" >&lt;T exten
 <span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (!isPrimitive(dep) &amp;&amp; isRex(dep)) {</span>
       const unSub = <span class="cstat-no" title="statement not covered" >subscribe(dep, <span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
         // TODO? 是否将任务放入微任务队列中更好的模拟触发时机
-<span class="cstat-no" title="statement not covered" >        <span class="missing-if-branch" title="if path not taken" >I</span>if (deps.length === 0) {</span>
-<span class="cstat-no" title="statement not covered" >          collectionState.enable = false;</span>
-        }
-<span class="cstat-no" title="statement not covered" >        unMountRef.current = callback();</span>
-<span class="cstat-no" title="statement not covered" >        <span class="missing-if-branch" title="if path not taken" >I</span>if (deps.length === 0) {</span>
-<span class="cstat-no" title="statement not covered" >          collectionState.enable = true;</span>
-        }
+<span class="cstat-no" title="statement not covered" >        dep.__rex_vary = dep.__rex_vary ? dep.__rex_vary + 1 : 1;</span>
       });
 &nbsp;
       const unSubCB = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
@@ -232,12 +236,23 @@ const unSubDeps = <span class="fstat-no" title="function not covered" >(u</span>
   }
 };
 &nbsp;
+const getDeps = <span class="fstat-no" title="function not covered" >&lt;T extends TargetObj&gt;(d</span>eps: Deps&lt;T&gt;) =&gt; {
+<span class="cstat-no" title="statement not covered" >  return deps.map(<span class="fstat-no" title="function not covered" >dep </span>=&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (!isPrimitive(dep) &amp;&amp; isRex(dep)) {</span>
+<span class="cstat-no" title="statement not covered" >      return dep.__rex_vary;</span>
+    }
+<span class="cstat-no" title="statement not covered" >    return dep;</span>
+  });
+};
+&nbsp;
 const useWatch = <span class="fstat-no" title="function not covered" >&lt;T extends TargetObj&gt;(c</span>allback: EffectFn, deps: Deps&lt;T&gt;) =&gt; {
   const unSubsRef = <span class="cstat-no" title="statement not covered" >useRef(new Set&lt;EffectFn&gt;());</span>
   const unMountRef = <span class="cstat-no" title="statement not covered" >useRef&lt;any&gt;();</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >() =</span>&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    subDeps(callback, unMountRef, unSubsRef, deps);</span>
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (deps.length !== 0) {</span>
+<span class="cstat-no" title="statement not covered" >      subDeps(callback, unMountRef, unSubsRef, deps);</span>
+    }
 <span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (deps.length === 0) {</span>
 <span class="cstat-no" title="statement not covered" >      collectionState.enable = false;</span>
     }
@@ -249,7 +264,7 @@ const useWatch = <span class="fstat-no" title="function not covered" >&lt;T exte
 <span class="cstat-no" title="statement not covered" >      unSubDeps(unSubsRef);</span>
 <span class="cstat-no" title="statement not covered" >      unMountRef.current?.();</span>
     };
-  }, [...deps]);
+  }, [...getDeps(deps)]);
 };
 &nbsp;
 export type { EffectFn, Deps };
@@ -262,7 +277,7 @@ export { useWatch };
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2024-05-07T07:32:31.253Z
+                at 2024-08-31T17:01:39.066Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
